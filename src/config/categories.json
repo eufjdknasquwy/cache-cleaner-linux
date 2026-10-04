@@ -1,0 +1,32 @@
+// DO NOT TOUCH THIS FILE
+// THIS FILE IS USED FOR SCANNING CACHE DIRECTORIES
+// IF YOU WANT TO ADD YOUR OWN CACHE DIRECTORY, YOU SHOULD
+// ADD IT TO user_directories.json IN ~/.config/cache-cleaner
+{
+  "categories":
+  [
+    {
+      "category" : "Safe",
+      "danger_level": "Safe",
+      "paths":
+      [
+        "~/.cache/yay",
+        "~/.cache/paru"
+      ]
+    },
+    {
+      "category" : "Warning",
+      "danger_level": "Warning",
+      "paths":
+      [
+      ]
+    },
+    {
+      "category" : "Unknown",
+      "danger_level": "Unknown",
+      "paths":
+      [
+      ]
+    }
+  ]
+}
