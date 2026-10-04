@@ -26,7 +26,7 @@ package managers, and confirmations are not implemented yet.
 
 ## Screenshots
 
-![Main window](docs/screenshots/screenshot1.png)
+![Main window](docs/screenshots/screenshot1.jpg)
 
 ## Features
 
@@ -113,5 +113,5 @@ MIT - see [LICENSE](LICENSE).
 
 ## Credits
 
-- [gtkmm](https://gtkmm.org/) — GUI
+ - [gtkmm](https://github.com/GNOME/gtkmm) - GUI
 - [nlohmann/json](https://github.com/nlohmann/json) — JSON configurations
