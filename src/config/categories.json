@@ -11,7 +11,12 @@
       "paths":
       [
         "~/.cache/yay",
-        "~/.cache/paru"
+        "~/.cache/paru",
+        "~/.cache/pip",
+        "~/.cache/go-build",
+        "~/.nuget/packages",
+        "~/.npm/_cacache",
+        "~/.cache/tldr"
       ]
     },
     {
@@ -19,6 +24,15 @@
       "danger_level": "Warning",
       "paths":
       [
+        "~/.cache/trizen",
+        "~/.cache/pikaur",
+        "~/.cache/gstreamer-1.0",
+        "~/.cache/thumbnails",
+        "~/.cache/fontconfig",
+        "~/.cache/mpv",
+        "~/.cache/vlc",
+        "~/.cache/nvidia",
+        "~/.cache/mesa_shader_cache"
       ]
     },
     {

@@ -99,7 +99,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
                                                const std::vector<std::string> &paths)
 {
     Gtk::Expander *expander = Gtk::manage(new Gtk::Expander(title));
-    expander->set_expanded(true);
+    expander->set_expanded(false);
 
     Gtk::ScrolledWindow *scroll = Gtk::manage(new Gtk::ScrolledWindow());
     scroll->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
@@ -125,6 +125,8 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
 
     for (const std::string &path : paths)
     {
+        if (!core::CacheCleaner::exists(path))
+            continue;
         Gtk::CheckButton *check_button = Gtk::manage(new Gtk::CheckButton(path));
         box->add(*check_button);
     }

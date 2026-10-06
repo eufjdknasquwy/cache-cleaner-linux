@@ -12,6 +12,11 @@ void utils::ArgsParser::parse(int &argc, char *argv[])
             print_help();
             std::exit(DEFAULT_HELP_EXIT_CODE);
         }
+        else if (arg == "-v" || arg == "--version")
+        {
+            utils::ConsoleLogger::printmsg_str(std::string(PROJECT_NAME) + " v" + std::string(PROJECT_VERSION));
+            std::exit(DEFAULT_HELP_EXIT_CODE);
+        }
         else if (arg == "-t" || arg == "--tray")
         {
             tray = true;
@@ -27,6 +32,7 @@ void utils::ArgsParser::print_help()
 
     // аргументы с описаниями
     utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "-h, --help", "Show help message");
+    utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "-v, --version", "Show the cache cleaner version");
     utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "-t, --tray", "Launch program in tray");
 
     // конец

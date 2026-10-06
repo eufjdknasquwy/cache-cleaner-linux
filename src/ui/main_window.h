@@ -18,8 +18,8 @@ namespace ui
             }
 
         private:
-            static constexpr int DEFAULT_WIN_WIDTH = 800;
-            static constexpr int DEFAULT_WIN_HEIGHT = 600;
+            static constexpr int DEFAULT_WIN_WIDTH = 650;
+            static constexpr int DEFAULT_WIN_HEIGHT = 800;
             static constexpr int DEFAULT_MARGIN = 10;
             static constexpr int DEFAULT_SPACING = 5;
             static constexpr int DEFAULT_PADDING = 0;

@@ -3,3 +3,4 @@ CompileFlags:
 
 Index:
   Background: Skip
+  StandardLibrary: false # нельзя будет go to definition в библиотеку

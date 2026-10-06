@@ -101,11 +101,12 @@ Example:
 ## Roadmap
 
 - [x] Cleaning `yay` / `paru` caches
+- [x] Fix crashes
 - [ ] Root-cleaning
 - [ ] Package managers cache cleaning
 - [ ] Systemd logs cleaning
 - [ ] Confirmations for deleting dangerous files
-- [ ] Fix crashes
+- [ ] App tray
 
 ## License
 
