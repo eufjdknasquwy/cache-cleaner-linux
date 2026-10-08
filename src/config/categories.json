@@ -7,11 +7,12 @@
   [
     {
       "category" : "Safe",
-      "danger_level": "Safe",
-      "paths":
+      "danger_level" : "Safe",
+      "paths" :
       [
         "~/.cache/yay",
         "~/.cache/paru",
+
         "~/.cache/pip",
         "~/.cache/go-build",
         "~/.nuget/packages",
@@ -21,8 +22,8 @@
     },
     {
       "category" : "Warning",
-      "danger_level": "Warning",
-      "paths":
+      "danger_level" : "Warning",
+      "paths" :
       [
         "~/.cache/trizen",
         "~/.cache/pikaur",
@@ -37,9 +38,24 @@
     },
     {
       "category" : "Unknown",
-      "danger_level": "Unknown",
-      "paths":
+      "danger_level" : "Unknown",
+      "paths" :
       [
+      ]
+    },
+    {
+      "category" : "System",
+      "danger_level" : "System",
+      "paths" :
+      [
+        "pacman",
+        "apt",
+        "dnf",
+
+        "flatpak",
+        "snap",
+
+        "journalctl (systemd logs)"
       ]
     }
   ]

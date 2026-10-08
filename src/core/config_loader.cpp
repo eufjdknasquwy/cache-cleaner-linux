@@ -10,6 +10,18 @@ namespace fs = std::filesystem;
 namespace core
 {
     Config ConfigLoader::m_config;
+} // namespace core
+/** Loads config from json
+ */
+std::vector<std::string> core::ConfigLoader::get_paths_by_danger(core::DangerLevel danger)
+{
+    std::vector<std::string> paths;
+    for (const auto &[key, value] : m_config.known_paths)
+    {
+        if (value == danger)
+            paths.push_back(key);
+    }
+    return paths;
 }
 void core::ConfigLoader::load_config()
 {
@@ -30,11 +42,11 @@ void core::ConfigLoader::load_config()
             m_config.known_paths[path] = danger;
         }
     }
-    load_user_config();
+    load_user_config(); // loads user config from user json
 }
 void core::ConfigLoader::load_user_config()
 {
-    ensure_user_config_exists();
+    ensure_user_config_exists(); // makes sure user config exists
     std::ifstream config_file(get_user_categories_dir().string());
     json json_config = json::parse(config_file, nullptr, true, true);
     auto categories = json_config["categories"];
@@ -47,6 +59,8 @@ void core::ConfigLoader::load_user_config()
         }
     }
 }
+/** Makes sure user config exists
+ */
 void core::ConfigLoader::ensure_user_config_exists()
 {
     fs::path config_dir = get_home_dir() / ".config" / "cache-cleaner";
@@ -76,6 +90,9 @@ void core::ConfigLoader::ensure_user_config_exists()
         std::cout << "Created default config: " << config_file << "\n";
     }
 }
+/** Converts string danger level to enum type,
+ * example: "Safe" => DangerLevel::Safe
+ */
 core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string d)
 {
     if (d == "Safe")
@@ -84,5 +101,7 @@ core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string d)
         return DangerLevel::Warning;
     else if (d == "Unknown")
         return DangerLevel::Unknown;
+    else if (d == "System")
+        return DangerLevel::System;
     return DangerLevel::Unknown;
 }

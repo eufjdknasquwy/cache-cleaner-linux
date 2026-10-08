@@ -5,7 +5,7 @@ namespace utils
         public:
             ConsoleLogger() = delete;
             static void printmsg(const char *message);
-            static void printmsg_str(const std::string &message);
+            static void printmsg(const std::string &message);
             static void print_help_msg(const int indent, const char *arg, const char *desc);
     };
 } // namespace utils

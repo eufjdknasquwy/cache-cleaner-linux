@@ -17,12 +17,13 @@ set(SOURCES
     src/core/cleaner.cpp
     src/core/config_loader.cpp
     src/core/constants.cpp
+    src/core/cli_tools.cpp
 
     src/ui/main_window.cpp
 
     src/utils/console_logger.cpp
-
     src/utils/args_parser.cpp
+    src/utils/system_detector.cpp
 )
 
 # компиляция всех файлов

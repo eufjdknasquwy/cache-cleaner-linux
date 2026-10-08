@@ -1,7 +1,6 @@
 #include "main_window.h"
 #include "core/cleaner.h"
-#include <gtkmm/checkbutton.h>
-#include <gtkmm/widget.h>
+#include "core/config_loader.h"
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 {
@@ -44,38 +43,31 @@ ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
     fill_content_box(); // заполнение середины окна
     fill_bottom_box();  // заполнение нижней части окна
 }
-std::vector<std::string> ui::MainWindow::get_paths_by_danger(core::DangerLevel danger)
-{
-    std::vector<std::string> paths;
-    for (const auto &[key, value] : m_config.known_paths)
-    {
-        if (value == danger)
-            paths.push_back(key);
-    }
-    return paths;
-}
 void ui::MainWindow::fill_content_box()
 {
-    std::vector<std::string> safe_paths = get_paths_by_danger(core::DangerLevel::Safe);
-    std::vector<std::string> warning_paths = get_paths_by_danger(core::DangerLevel::Warning);
-    std::vector<std::string> unknown_paths = get_paths_by_danger(core::DangerLevel::Unknown);
-    std::vector<std::string> user_paths = get_paths_by_danger(core::DangerLevel::User);
+    std::vector<std::string> safe_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Safe);
+    std::vector<std::string> warning_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Warning);
+    std::vector<std::string> unknown_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Unknown);
+    std::vector<std::string> system_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::System);
+    std::vector<std::string> user_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::User);
     if (m_safe_expander || m_warning_expander || m_unknown_expander || m_user_expander)
     {
         m_safe_expander = nullptr;
         m_warning_expander = nullptr;
         m_unknown_expander = nullptr;
+        m_system_expander = nullptr;
         m_user_expander = nullptr;
     }
-    m_safe_expander = create_category("Safe to clear cache", "this cache is safe to clear", safe_paths);
-    m_warning_expander =
-        create_category("This cache requires caution (Warning!)", "delete with your own risk", warning_paths);
-    m_unknown_expander = create_category("Unknown cache (Warning!)", "delete with your own risk", unknown_paths);
-    m_user_expander = create_category("User added cache", "your own added cache", user_paths);
+    m_safe_expander = create_category(SAFE_EXPANDER_TITLE, SAFE_EXPANDER_DESC, safe_paths);
+    m_warning_expander = create_category(WARNING_EXPANDER_TITLE, WARNING_EXPANDER_DESC, warning_paths);
+    m_unknown_expander = create_category(UNKNOWN_EXPANDER_TITLE, UNKNOWN_EXPANDER_DESC, unknown_paths);
+    m_system_expander = create_category(SYSTEM_EXPANDER_TITLE, SYSTEM_EXPANDER_DESC, system_paths);
+    m_user_expander = create_category(USER_EXPANDER_TITLE, USER_EXPANDER_DESC, user_paths);
 
     m_content_box->pack_start(*m_safe_expander, false, false, 5);
     m_content_box->pack_start(*m_warning_expander, false, false, 5);
     m_content_box->pack_start(*m_unknown_expander, false, false, 5);
+    m_content_box->pack_start(*m_system_expander, false, false, 5);
     m_content_box->pack_start(*m_user_expander, false, false, 5);
 }
 void ui::MainWindow::fill_bottom_box()
@@ -106,12 +98,13 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     scroll->set_max_content_height(320);
     scroll->set_propagate_natural_height(true);
 
-    Gtk::ListBox *listbox = Gtk::manage(new Gtk::ListBox());
-    listbox->set_selection_mode(Gtk::SELECTION_NONE);
+    Gtk::Box *listbox = Gtk::manage(new Gtk::Box());
+    // listbox->set_selection_mode(Gtk::SELECTION_NONE);
 
     Gtk::ListBoxRow *listbox_row = Gtk::manage(new Gtk::ListBoxRow());
 
     Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, DEFAULT_SPACING));
+    set_margin(*box, DEFAULT_MARGIN);
     Gtk::Box *bottom_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, DEFAULT_SPACING));
 
     expander->add(*scroll);
@@ -139,7 +132,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     bottom_box->pack_start(*choose_everything, false, false, 5);
 
     clear_selected->signal_clicked().connect(
-        [box]()
+        [this, box, expander]()
         {
             std::vector<std::string> paths_to_clear;
             for (Gtk::Widget *widget : box->get_children())
@@ -152,8 +145,42 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
                 else
                     continue;
             }
-            core::CacheCleaner::sort_cache(paths_to_clear);
+            bool is_safe = (expander->get_label() == SAFE_EXPANDER_TITLE);
+            if (is_safe)
+            {
+                Gtk::MessageDialog dialog("Are you sure you want to clear this cache?", false, Gtk::MESSAGE_QUESTION,
+                                          Gtk::BUTTONS_YES_NO, false);
+
+                if (dialog.run() == Gtk::RESPONSE_YES)
+                    core::CacheCleaner::sort_cache(paths_to_clear);
+            }
+            else
+            {
+                Gtk::MessageDialog dialog1("Are you sure you want to clear this cache?\nThis may break some programs.",
+                                           false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
+
+                if (dialog1.run() != Gtk::RESPONSE_YES)
+                    return;
+
+                Gtk::MessageDialog dialog2("Totally sure?\nThis can break your system.", false, Gtk::MESSAGE_WARNING,
+                                           Gtk::BUTTONS_YES_NO, false);
+
+                if (dialog2.run() == Gtk::RESPONSE_YES)
+                    core::CacheCleaner::sort_cache(paths_to_clear);
+            }
+
+            for (Gtk::Widget *widget : box->get_children())
+            {
+                if (Gtk::CheckButton *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
+                {
+                    if (check_button->get_active())
+                        check_button->set_active(false);
+                }
+                else
+                    continue;
+            }
         });
+
     choose_everything->signal_toggled().connect(
         [box, choose_everything]()
         {

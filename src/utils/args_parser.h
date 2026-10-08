@@ -11,6 +11,7 @@ namespace utils
 
         private:
             static constexpr int HELP_FLAG_WIDTH = 20;
-            static constexpr int DEFAULT_HELP_EXIT_CODE = 0;
+            static constexpr int EXIT_CODE_NO_ERRS = 0;
+            static constexpr int EXIT_CODE_ERRS = 1;
     };
 } // namespace utils

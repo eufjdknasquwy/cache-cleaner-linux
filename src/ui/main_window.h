@@ -1,3 +1,4 @@
+#pragma once
 #include "core/config_loader.h"
 #include "utils/args_parser.h"
 #include <gtkmm.h>
@@ -24,6 +25,21 @@ namespace ui
             static constexpr int DEFAULT_SPACING = 5;
             static constexpr int DEFAULT_PADDING = 0;
 
+            static constexpr const char *SAFE_EXPANDER_TITLE = "Safe to clear cache";
+            static constexpr const char *SAFE_EXPANDER_DESC = "this cache is safe to clear";
+
+            static constexpr const char *WARNING_EXPANDER_TITLE = "This cache requires caution (Warning!)";
+            static constexpr const char *WARNING_EXPANDER_DESC = "delete with your own risk";
+
+            static constexpr const char *UNKNOWN_EXPANDER_TITLE = "Unknown cache (Warning!)";
+            static constexpr const char *UNKNOWN_EXPANDER_DESC = "delete with your own risk";
+
+            static constexpr const char *SYSTEM_EXPANDER_TITLE = "System cache (root, Warning!)";
+            static constexpr const char *SYSTEM_EXPANDER_DESC = "this cache needs root rights";
+
+            static constexpr const char *USER_EXPANDER_TITLE = "User added cache";
+            static constexpr const char *USER_EXPANDER_DESC = "your own added cache";
+
             const core::Config &m_config;
             std::unique_ptr<Gtk::Window> m_window;
             Gtk::Box *m_window_box = nullptr;
@@ -36,12 +52,13 @@ namespace ui
             Gtk::Expander *m_safe_expander = nullptr;
             Gtk::Expander *m_warning_expander = nullptr;
             Gtk::Expander *m_unknown_expander = nullptr;
+            Gtk::Expander *m_system_expander = nullptr;
             Gtk::Expander *m_user_expander = nullptr;
+            bool m_expander_expanded = false;
 
             Gtk::Button *m_close_button = nullptr;
             Gtk::Button *m_scan_cache_button = nullptr;
 
-            std::vector<std::string> get_paths_by_danger(core::DangerLevel danger);
             void fill_content_box();
             void fill_bottom_box();
 

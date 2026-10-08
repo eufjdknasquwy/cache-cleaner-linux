@@ -1,3 +1,4 @@
+#pragma once
 #include "danger_level.h"
 #include <map>
 #include <nlohmann/json_fwd.hpp>
@@ -14,6 +15,7 @@ namespace core
         public:
             ConfigLoader() = delete;
             static void load_config();
+            static std::vector<std::string> get_paths_by_danger(core::DangerLevel danger);
             static const core::Config &get_config()
             {
                 return m_config;

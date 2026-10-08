@@ -1,3 +1,4 @@
+#pragma once
 namespace core
 {
     enum DangerLevel
@@ -5,6 +6,7 @@ namespace core
         Safe,
         Warning,
         Unknown,
+        System,
         User
     };
 } // namespace core
