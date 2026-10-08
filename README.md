@@ -22,8 +22,8 @@ package managers and user-added directories
 ## Status
 
 **Alpha (v0.2.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
-and system caches (pacman, apt, dnf, flatpak, snap, journald)
-GUI and CLI modes. Confirmations for dangerous categories. Root-cleaning via polkit
+and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journald`.
+Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleaning via polkit.
 
 ## Screenshots
 
@@ -45,7 +45,7 @@ GUI and CLI modes. Confirmations for dangerous categories. Root-cleaning via pol
 ### Cache support
 - AUR helpers: `yay`, `paru`
 - Languages: `pip`, `go`, `nuget`, `npm`
-- System (via polkit): `pacman`, `apt`, `dnf`, `flatpak`, `snap`
+- System: `pacman`, `apt`, `dnf`, `flatpak`, `snap`
 - Logs: `journalctl`
 
 ### Config
