@@ -8,10 +8,14 @@ namespace utils
             static void print_help();
 
             static bool tray;
+            static bool dry_run;
+            static bool yes;
 
         private:
-            static constexpr int HELP_FLAG_WIDTH = 20;
+            static constexpr int HELP_FLAG_WIDTH = 40;
             static constexpr int EXIT_CODE_NO_ERRS = 0;
             static constexpr int EXIT_CODE_ERRS = 1;
+
+            static std::vector<std::string> actions;
     };
 } // namespace utils

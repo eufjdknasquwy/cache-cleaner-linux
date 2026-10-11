@@ -40,11 +40,13 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearRepor
 
     dialog->show_all();
     dialog->run();
+    dialog->hide();
+    delete dialog;
 }
 std::tuple<Gtk::Dialog *, Gtk::Box *, Gtk::ListBox *> ui::MessageDialogHelper::create_dialog(
     const std::string &dialog_title, const std::string &message)
 {
-    auto *dialog = Gtk::manage(new Gtk::Dialog(dialog_title));
+    auto *dialog = new Gtk::Dialog(dialog_title, true);
     dialog->add_button("OK", Gtk::RESPONSE_OK);
     dialog->set_resizable(false);
 

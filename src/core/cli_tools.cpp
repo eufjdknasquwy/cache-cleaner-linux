@@ -1,6 +1,7 @@
 #include "cli_tools.h"
 #include "core/cleaner.h"
 #include "core/config_loader.h"
+#include "utils/args_parser.h"
 #include <iostream>
 bool core::cli::CliTools::ask_confirmation(const char *prompt)
 {
@@ -25,31 +26,48 @@ void core::cli::CliTools::delete_category(core::DangerLevel danger)
         std::cout << "No cache to clear" << "\n";
         return;
     }
+
+    core::ClearOptions options;
+    options.dry_run = utils::ArgsParser::dry_run;
+    options.cli = true;
+
     if (danger == core::DangerLevel::Safe)
     {
-        std::cout << "About to clear " << paths.size() << " paths (Safe):\n";
-        for (const auto &p : paths)
-            std::cout << "  " << p << "\n";
+        if (!utils::ArgsParser::yes)
+        {
+            std::cout << "About to clear " << paths.size() << " paths (Safe):\n";
+            for (const auto &p : paths)
+                std::cout << "  " << p << "\n";
+            std::cout << "\n";
+        }
+        if (!utils::ArgsParser::yes && !options.dry_run)
+        {
+            if (!ask_confirmation("Continue?"))
+                return;
+        }
 
-        if (!ask_confirmation("Continue?"))
-            return;
-
-        core::CacheCleaner::sort_cache(paths);
+        core::CacheCleaner::sort_cache(paths, options);
         return;
     }
 
-    std::cout << "WARNING: You are about to clear " << paths.size() << " paths:\n";
-    for (const auto &p : paths)
-        std::cout << "  " << p << "\n";
-    std::cout << "This may break some programs.\n\n";
+    if (!utils::ArgsParser::yes)
+    {
+        std::cout << "Warning: about to clear " << paths.size() << " paths:\n";
+        for (const auto &p : paths)
+            std::cout << "  " << p << "\n";
+        std::cout << "\n";
+    }
+    if (!utils::ArgsParser::yes && !options.dry_run)
+    {
+        if (!ask_confirmation("Are you sure? This may break some programs."))
+            return;
 
-    if (!ask_confirmation("Are you sure?"))
-        return;
+        if (!ask_confirmation("Totally sure?"))
+            return;
+    }
 
-    if (!ask_confirmation("Are you REALLY sure? This is not reversible"))
-        return;
-
-    core::CacheCleaner::sort_cache(paths);
+    std::cout << "\n";
+    core::CacheCleaner::sort_cache(paths, options);
 }
 void core::cli::CliTools::list_category(core::DangerLevel danger)
 {

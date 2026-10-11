@@ -21,7 +21,7 @@ package managers and user-added directories
 
 ## Status
 
-**Alpha (v0.2.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
+**Alpha (v0.3.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
 and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journald`.
 Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleaning via polkit.
 
@@ -40,13 +40,14 @@ Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleanin
 ### CLI
 - `--list` — list all caches
 - `--delete-safe`, `--delete-warning`, `--delete-unknown`, `--delete-system`, `--delete-user`
+- `-y` / `--yes`, `--dry-run` for scripts / testing
 - `--tray` — run in tray (planned)
 
 ### Cache support
 - AUR helpers: `yay`, `paru`
 - Programming languages: `pip`, `go`, `nuget`, `npm`
 - System package managers: `pacman`, `apt`, `dnf`, `flatpak`, `snap`
-- System: `journalctl`
+- System cache: `journalctl`
 
 ### Config
 - `categories.json` — built-in
@@ -118,8 +119,6 @@ Example:
 
 ## Known issues (problems)
 
-- No `--dry-run`
-- No `--yes` flag for scripts / cron
 - No fallback to `sudo` if `pkexec` is unavailable
 - No support for many package managers
 - Logging in one file for every session, instead of log per session
@@ -132,18 +131,17 @@ Example:
 - [x] Systemd logs (`journalctl`)
 - [x] Confirmation dialogs for dangerous categories
 - [x] Root-cleaning via `pkexec`
-- [x] Basic CLI mode (`--list`, `--delete-x`)
+- [x] Basic CLI mode (`--list`, `--delete-x`, `--dry-run`, `--yes`)
 - [x] Report after cleaning
 - [x] Cache size showcase
 - [x] Logging
+- [x] `--dry-run`
+- [x] `--yes` for scripts
 
 ### Planned
 - [ ] App tray
 - [ ] GTK4 instead of GTK3
-- [ ] `--dry-run`
-- [ ] `--yes` for scripts
-- [ ] Better security
-- [ ] Error GUI messages
+- [ ] Error messages in GUI
 - [ ] Cleaning logs for not only systemd
 
 ## License
@@ -153,4 +151,4 @@ MIT - see [LICENSE](LICENSE).
 ## Credits
 
 - [gtkmm](https://github.com/GNOME/gtkmm) - GUI
-- [nlohmann/json](https://github.com/nlohmann/json) - JSON configurations
+- [nlohmann/json](https://github.com/nlohmann/json) - JSON

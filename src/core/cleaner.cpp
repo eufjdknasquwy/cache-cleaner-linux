@@ -118,7 +118,8 @@ std::string core::CacheCleaner::format_size(std::uintmax_t bytes)
 /** Sorts out cache in std::vector and then calls the clear_cache function
  * @ param dirty_paths_to_clear: std::vector with unparsed cache paths
  */
-core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear)
+core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear,
+                                                               const ClearOptions &options)
 {
     std::vector<std::string> filtered_paths;
     const std::string home_path_str = get_home_dir().string();
@@ -135,14 +136,16 @@ core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector
             filtered_paths.push_back(path);
         }
     }
-    clear_cache(filtered_paths);
+    clear_cache(filtered_paths, options);
     return m_del_result;
 }
 /** Clears cache
  * @ param paths_to_clear: vector with cache paths, that need to be cleared
  */
-void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_clear)
+void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_clear, const ClearOptions &options)
 {
+    if (options.cli)
+        Gio::init();
     m_del_result.paths.clear();
     m_del_result.commands.clear();
     const fs::path home_path = get_home_dir();
@@ -168,28 +171,37 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
         fs::path path = fs::path(path_str).lexically_normal();
         if (!root_paths.contains(path) && !fs::exists(path))
         {
-            utils::ConsoleLogger::log(core::LogLevel::Warning,
-                                      "File or directory " + path.string() + " does not exist, proceeding");
+            if (!options.dry_run)
+            {
+                utils::ConsoleLogger::log(core::LogLevel::Warning,
+                                          "File or directory " + path.string() + " does not exist, proceeding");
+            }
             continue;
         }
-        // if (fs::exists(yay_dir) && fs::exists(path) && fs::equivalent(path, yay_dir))
         if (path == yay_dir)
         {
-            utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting yay cache...");
+            if (!options.dry_run)
+                utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting yay cache...");
+            else
+                utils::ConsoleLogger::printmsg("[dry-run] Would delete yay cache");
+
             for (const auto &entry : fs::directory_iterator(yay_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
-                    del_to_trash(entry);
+                    del_to_trash(entry, options);
             }
         }
-        // else if (fs::exists(paru_dir) && fs::exists(path) && fs::equivalent(path, paru_dir))
         else if (path == paru_dir)
         {
-            utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting paru cache...");
+            if (!options.dry_run)
+                utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting paru cache...");
+            else
+                utils::ConsoleLogger::printmsg("[dry-run] Would delete paru cache");
+
             for (const auto &entry : fs::directory_iterator(paru_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
-                    del_to_trash(entry);
+                    del_to_trash(entry, options);
             }
         }
         else
@@ -206,25 +218,29 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
                 {
                     command = it->second;
                 }
-                run_command(command);
+                run_command(command, options);
                 continue;
             }
-            utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleting " + path.string()));
+            if (!options.dry_run)
+                utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleting " + path.string()));
             if (fs::is_directory(path))
             {
-                del_to_trash(path);
-                // for (const auto &entry : fs::directory_iterator(path))
-                //     del_to_trash(entry);
+                del_to_trash(path, options);
             }
             else
             {
-                del_to_trash(fs::directory_entry(path));
+                del_to_trash(fs::directory_entry(path), options);
             }
         }
     }
 }
-void core::CacheCleaner::run_command(const std::string &command)
+void core::CacheCleaner::run_command(const std::string &command, const ClearOptions &options)
 {
+    if (options.dry_run)
+    {
+        utils::ConsoleLogger::printmsg(("[dry-run] Would run: " + command));
+        return;
+    }
     utils::ConsoleLogger::log(core::LogLevel::Info, ("Running: " + command));
     int ret = 0;
     std::string out, err;
@@ -243,9 +259,14 @@ void core::CacheCleaner::run_command(const std::string &command)
     }
     m_del_result.commands[command] = ret;
 }
-void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry)
+void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry, const ClearOptions &options)
 {
     auto path = entry.path().string();
+    if (options.dry_run)
+    {
+        utils::ConsoleLogger::printmsg(("[dry-run] Would delete: " + path));
+        return;
+    }
     try
     {
         auto file = Gio::File::create_for_path(path);
@@ -267,9 +288,14 @@ void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry)
         }
     }
 }
-void core::CacheCleaner::del_to_trash(const fs::path &fs_path)
+void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOptions &options)
 {
     auto path = fs_path.string();
+    if (options.dry_run)
+    {
+        utils::ConsoleLogger::printmsg(("[dry-run] Would delete: " + path));
+        return;
+    }
     try
     {
         auto file = Gio::File::create_for_path(path);
