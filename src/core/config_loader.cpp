@@ -1,10 +1,10 @@
 #include "config_loader.h"
 #include "constants.h"
 #include "core/cleaner.h"
-#include "core/danger_level.h"
+#include "core/enums.h"
+#include "utils/console_logger.h"
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
@@ -38,22 +38,22 @@ int core::ConfigLoader::load_json_file(std::ifstream &config_file, json &json_co
     }
     catch (const std::runtime_error &e)
     {
-        std::cerr << "Failed to open settings file: " << "\n";
-        std::cerr << "Message: " << e.what() << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to open settings file: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         return 1;
     }
     catch (const json::parse_error &e)
     {
-        std::cerr << "Failed to parse settings file: " << "\n";
-        std::cerr << "Message: " << e.what() << "\n";
-        std::cerr << "ID: " << e.id << "\n";
-        std::cerr << "Parse error at byte " << e.byte << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to parse settings file: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Parse error at byte " + std::to_string(e.byte)));
         return 1;
     }
     catch (const std::exception &e)
     {
-        std::cerr << "Caught an unexpected error: " << "\n";
-        std::cerr << "Message: " << e.what() << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Caught an unexpected error: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         return 1;
     }
     return 0;
@@ -79,7 +79,11 @@ void core::ConfigLoader::load_config()
 
             CacheEntry cache;
 
-            cache.name = entry["name"].get<std::string>();
+            std::string name = entry["name"].get<std::string>();
+            if (name != "")
+                cache.name = name;
+            else
+                cache.name = entry["path"].get<std::string>();
 
             std::string path = entry["path"].get<std::string>();
             if (path != "")
@@ -119,11 +123,24 @@ void core::ConfigLoader::load_user_config()
         {
             CacheEntry cache;
 
-            cache.name = entry["name"].get<std::string>();
-            cache.path = entry["path"].get<std::string>();
-            cache.type = entry["type"].get<std::string>();
+            std::string name = entry["name"].get<std::string>();
+            if (name != "")
+                cache.name = name;
+            else
+                cache.name = entry["path"].get<std::string>();
+
+            std::string path = entry["path"].get<std::string>();
+            if (path != "")
+                cache.path = path;
+            else
+                cache.path = cache.name;
+
+            if (entry.contains("type"))
+                cache.type = entry["type"].get<std::string>();
+
             if (cache.type == "command" && entry.contains("command"))
                 cache.command = entry["command"].get<std::string>();
+
             cache.danger = DangerLevel::User;
 
             m_config.entries.push_back(cache);
@@ -143,22 +160,23 @@ void core::ConfigLoader::ensure_user_config_exists()
         fs::create_directories(config_dir, ec);
         if (ec)
         {
-            std::cerr << "Cannot create " << config_dir << ": " << ec.message() << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error,
+                                      ("Cannot create " + config_dir.string() + ": " + ec.message()));
             return;
         }
-        std::cout << "Created directory: " << config_dir << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Info, ("Created directory: " + config_dir.string()));
     }
     if (!fs::exists(config_file))
     {
         std::ofstream out(config_file);
         if (!out.is_open())
         {
-            std::cerr << "Cannot create " << config_file << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("Cannot create " + config_file.string()));
             return;
         }
         out << DEFAULT_USER_CONFIG;
         // out.close();
-        std::cout << "Created default config: " << config_file << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Info, ("Created default config: " + config_file.string()));
     }
 }
 /** Converts string danger level to enum type,
@@ -174,6 +192,8 @@ core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string &d)
         return DangerLevel::Unknown;
     if (d == "System")
         return DangerLevel::System;
+    if (d == "User")
+        return DangerLevel::User;
 
     return DangerLevel::Unknown;
 }

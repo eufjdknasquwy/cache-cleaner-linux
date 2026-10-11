@@ -17,7 +17,7 @@ namespace core
 
             static ClearReport sort_cache(const std::vector<std::string> &paths_to_clear);
             static bool exists(const std::string &path_str);
-            static uint size(const std::string &path_str);
+            static uintmax_t size(const std::string &path_str);
             static std::string format_size(std::uintmax_t bytes);
 
         private:

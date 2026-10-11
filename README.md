@@ -115,34 +115,35 @@ Example:
 
 - Linux only
 - Root caches require polkit agent
-- On headless servers, use CLI mode (`--list`, `--delete-x`)
 
 ## Known issues (problems)
 
 - No `--dry-run`
 - No `--yes` flag for scripts / cron
 - No fallback to `sudo` if `pkexec` is unavailable
+- No support for many package managers
 
 ## Roadmap
 
 ### Done
-- [x] Cleaning package manager caches (`yay`, `paru`, `pip`, `go`, `nuget`, `npm`)
-- [x] System caches via polkit (`pacman`, `apt`, `dnf`, `flatpak`, `snap`)
+- [x] Cleaning package manager caches like `go`, `yay` and more
+- [x] Cleaning System caches like `pacman` or `apt` and more
 - [x] Systemd logs (`journalctl`)
 - [x] Confirmation dialogs for dangerous categories
 - [x] Root-cleaning via `pkexec`
 - [x] Basic CLI mode (`--list`, `--delete-x`)
 - [x] Report after cleaning
-- [x] Cache size
+- [x] Cache size showcase
+- [x] Logging
 
 ### Planned
 - [ ] App tray
-- [ ] GTK4
+- [ ] GTK4 instead of GTK3
 - [ ] `--dry-run`
 - [ ] `--yes` for scripts
 - [ ] Better security
-- [ ] Logging
 - [ ] Error GUI messages
+- [ ] Cleaning logs for not only systemd
 
 ## License
 

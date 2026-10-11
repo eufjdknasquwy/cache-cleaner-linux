@@ -1,11 +1,13 @@
 #include "core/cleaner.h"
 #include "config_loader.h"
 #include "constants.h"
-#include "core/danger_level.h"
+#include "core/enums.h"
+#include "utils/console_logger.h"
 #include "utils/system_detector.h"
+#include <cstdint>
 #include <filesystem>
 #include <giomm/file.h>
-#include <iostream>
+#include <string>
 namespace fs = std::filesystem;
 core::Config const &core::CacheCleaner::m_config = core::ConfigLoader::get_config();
 core::CacheCleaner::ClearReport core::CacheCleaner::m_del_result;
@@ -54,13 +56,13 @@ bool core::CacheCleaner::exists(const std::string &path_str)
         return false;
     }
 }
-uint core::CacheCleaner::size(const std::string &path_str)
+uintmax_t core::CacheCleaner::size(const std::string &path_str)
 {
     auto path = expand_tilde(path_str);
     std::error_code ec;
     for (const auto &entry : m_config.entries)
     {
-        if (entry.danger == DangerLevel::System && (entry.name == path_str || entry.name == path))
+        if (entry.danger == DangerLevel::System && (entry.path == path_str || entry.path == path))
         {
             return UINT32_MAX;
         }
@@ -70,7 +72,7 @@ uint core::CacheCleaner::size(const std::string &path_str)
         auto size = fs::file_size(path, ec);
         if (ec)
         {
-            std::cerr << "Error: " << ec.message() << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error, ec.message());
         }
         return size;
     }
@@ -166,13 +168,14 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
         fs::path path = fs::path(path_str).lexically_normal();
         if (!root_paths.contains(path) && !fs::exists(path))
         {
-            std::cout << "File or directory " << path << " does not exist, proceeding" << std::endl;
+            utils::ConsoleLogger::log(core::LogLevel::Warning,
+                                      "File or directory " + path.string() + " does not exist, proceeding");
             continue;
         }
         // if (fs::exists(yay_dir) && fs::exists(path) && fs::equivalent(path, yay_dir))
         if (path == yay_dir)
         {
-            std::cout << "Deleting yay cache..." << std::endl;
+            utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting yay cache...");
             for (const auto &entry : fs::directory_iterator(yay_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
@@ -182,7 +185,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
         // else if (fs::exists(paru_dir) && fs::exists(path) && fs::equivalent(path, paru_dir))
         else if (path == paru_dir)
         {
-            std::cout << "Deleting paru cache..." << std::endl;
+            utils::ConsoleLogger::log(core::LogLevel::Info, "Deleting paru cache...");
             for (const auto &entry : fs::directory_iterator(paru_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
@@ -206,7 +209,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
                 run_command(command);
                 continue;
             }
-            std::cout << "Deleting " << path << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleting " + path.string()));
             if (fs::is_directory(path))
             {
                 del_to_trash(path);
@@ -222,20 +225,21 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
 }
 void core::CacheCleaner::run_command(const std::string &command)
 {
-    std::cout << "Running: " << command << "\n";
+    utils::ConsoleLogger::log(core::LogLevel::Info, ("Running: " + command));
     int ret = 0;
     std::string out, err;
     try
     {
         Glib::spawn_command_line_sync(command, &out, &err, &ret);
         if (ret == 0)
-            std::cout << "Command succeeded: " << command << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Info, ("Command succeeded: " + command));
         else
-            std::cerr << "Command failed (status " << ret << "): " << err << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error,
+                                      ("Command failed (status " + std::to_string(ret) + "): " + err));
     }
     catch (const Glib::Error &e)
     {
-        std::cerr << "Failed to run " << command << ": " << e.what() << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
     }
     m_del_result.commands[command] = ret;
 }
@@ -246,18 +250,20 @@ void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry)
     {
         auto file = Gio::File::create_for_path(path);
         file->trash();
-        std::cout << "Deleted " << path << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
         m_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {
         if (e.code() == Gio::Error::PERMISSION_DENIED)
         {
-            std::cerr << "Permission denied, skipping " << entry.path() << ", try running with sudo" << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Warning, ("Permission denied, skipping " + entry.path().string() +
+                                                                ", try running with sudo"));
         }
         else
         {
-            std::cerr << "Failed deleting " << entry.path() << ": " << e.what() << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error,
+                                      ("Failed deleting " + entry.path().string() + ": " + e.what()));
         }
     }
 }
@@ -268,18 +274,19 @@ void core::CacheCleaner::del_to_trash(const fs::path &fs_path)
     {
         auto file = Gio::File::create_for_path(path);
         file->trash();
-        std::cout << "Deleted " << path << "\n";
+        utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
         m_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {
         if (e.code() == Gio::Error::PERMISSION_DENIED)
         {
-            std::cerr << "Permission denied, skipping " << path << ", try running with sudo" << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Warning,
+                                      ("Permission denied, skipping " + path + ", try running with sudo"));
         }
         else
         {
-            std::cerr << "Failed deleting " << path << ": " << e.what() << "\n";
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed deleting " + path + ": " + e.what()));
         }
     }
 }

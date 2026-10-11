@@ -1,5 +1,5 @@
 #pragma once
-#include "danger_level.h"
+#include "enums.h"
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 using json = nlohmann::json;
@@ -35,7 +35,7 @@ namespace core
     {
       "category" : "User",
       "danger_level": "User",
-      "paths":
+      "entries":
       [
       ]
     }

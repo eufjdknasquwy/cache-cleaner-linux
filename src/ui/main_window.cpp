@@ -145,6 +145,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     box->add(*desc_label);
 
     std::vector<std::string> existing_paths;
+    std::vector<std::pair<Gtk::CheckButton *, std::string>> check_buttons;
     for (const auto &[name, path] : paths)
     {
         if (!core::CacheCleaner::exists(path))
@@ -153,10 +154,12 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
 
         std::uintmax_t bytes = core::CacheCleaner::size(path);
         std::string size_str = bytes == UINT32_MAX ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
-        auto check_button_label = name + "\t" + "  " + size_str;
+        auto label = name + "\t" + "  " + size_str;
 
-        Gtk::CheckButton *check_button = Gtk::manage(new Gtk::CheckButton(check_button_label));
+        Gtk::CheckButton *check_button = Gtk::manage(new Gtk::CheckButton(label));
         box->add(*check_button);
+
+        check_buttons.push_back({check_button, name});
     }
 
     box->add(*bottom_box);
@@ -176,21 +179,17 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     }
 
     clear_selected->signal_clicked().connect(
-        [this, box, expander, paths]()
+        [this, box, expander, paths, check_buttons]()
         {
             std::vector<std::string> paths_to_clear;
-            for (Gtk::Widget *widget : box->get_children())
+            for (auto &[check, name] : check_buttons)
             {
-                if (Gtk::CheckButton *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
+                if (check->get_active())
                 {
-                    if (check_button->get_active())
-                    {
-                        auto cache_name = check_button->get_label();
-                        paths_to_clear.push_back(paths.at(cache_name));
-                    }
+                    auto it = paths.find(name);
+                    if (it != paths.end())
+                        paths_to_clear.push_back(it->second);
                 }
-                else
-                    continue;
             }
             bool is_safe = (expander->get_label() == SAFE_EXPANDER_TITLE);
             if (is_safe)
