@@ -27,7 +27,8 @@ Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleanin
 
 ## Screenshots
 
-![Main window](docs/screenshots/screenshot1.jpg)
+![Main window](docs/screenshots/screenshot1.png)
+![CLI](docs/screenshots/screenshot2.png)
 
 ## Features
 
@@ -143,6 +144,10 @@ Example:
 - [ ] GTK4 instead of GTK3
 - [ ] Error messages in GUI
 - [ ] Cleaning logs for not only systemd
+- [ ] Scan size
+- [ ] Delete everything in user trash
+- [ ] Async operations for performance
+- [ ] Custom CSS and animations
 
 ## License
 
