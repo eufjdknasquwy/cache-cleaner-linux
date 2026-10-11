@@ -1,61 +1,70 @@
 // DO NOT TOUCH THIS FILE
 // THIS FILE IS USED FOR SCANNING CACHE DIRECTORIES
+//
 // IF YOU WANT TO ADD YOUR OWN CACHE DIRECTORY, YOU SHOULD
 // ADD IT TO user_directories.json IN ~/.config/cache-cleaner
+//
+// IF YOU REALLY WANT TO EDIT THIS FILE, YOU SHOULD
+// READ THE DOCUMENTATION
+//
+// IF YOU DAMAGE THE FILE,
+// YOU CAN REDOWNLOAD IT FROM GITHUB REPOSITORY,
+// AND PUT IT RIGHT WHERE YOU FOUND THIS
 {
   "categories":
   [
     {
       "category" : "Safe",
       "danger_level" : "Safe",
-      "paths" :
+      "entries" :
       [
-        "~/.cache/yay",
-        "~/.cache/paru",
+        { "name": "yay", "path": "~/.cache/yay", "type": "path" },
+        { "name": "paru", "path": "~/.cache/paru", "type": "path" },
 
-        "~/.cache/pip",
-        "~/.cache/go-build",
-        "~/.nuget/packages",
-        "~/.npm/_cacache",
-        "~/.cache/tldr"
+        { "name": "pip", "path": "~/.cache/pip", "type": "command", "command": "pip cache purge" },
+        { "name": "go", "path": "~/.cache/go-build", "type": "command", "command": "go clean -cache -fuzzcache" },
+        { "name": "nuget", "path": "~/.nuget/packages", "type": "command", "command": "dotnet nuget locals all --clear" },
+        { "name": "npm", "path": "~/.npm/_cacache", "type": "command", "command": "npm cache clean --force" },
+
+        { "name": "tldr", "path": "~/.cache/tldr", "type": "path" }
       ]
     },
     {
       "category" : "Warning",
       "danger_level" : "Warning",
-      "paths" :
+      "entries" :
       [
-        "~/.cache/trizen",
-        "~/.cache/pikaur",
-        "~/.cache/gstreamer-1.0",
-        "~/.cache/thumbnails",
-        "~/.cache/fontconfig",
-        "~/.cache/mpv",
-        "~/.cache/vlc",
-        "~/.cache/nvidia",
-        "~/.cache/mesa_shader_cache"
+        { "name": "trizen", "path": "~/.cache/trizen", "type": "path" },
+        { "name": "pikaur", "path": "~/.cache/pikaur", "type": "path" },
+        { "name": "gstreamer", "path": "~/.cache/gstreamer-1.0", "type": "path" },
+        { "name": "thumbnails", "path": "~/.cache/thumbnails", "type": "path" },
+        { "name": "font config", "path": "~/.cache/fontconfig", "type": "path" },
+        { "name": "mpv", "path": "~/.cache/mpv", "type": "path" },
+        { "name": "vlc", "path": "~/.cache/vlc", "type": "path" },
+        { "name": "nvidia", "path": "~/.cache/nvidia", "type": "path" },
+        { "name": "mesa shader cache", "path": "~/.cache/mesa_shader_cache", "type": "path" }
       ]
     },
     {
       "category" : "Unknown",
       "danger_level" : "Unknown",
-      "paths" :
+      "entries" :
       [
       ]
     },
     {
       "category" : "System",
       "danger_level" : "System",
-      "paths" :
+      "entries" :
       [
-        "pacman",
-        "apt",
-        "dnf",
+        { "name": "pacman", "path": "pacman", "type": "command", "command": "pacman -Scc --noconfirm" },
+        { "name": "apt", "path": "apt", "type": "command", "command": "sh -c 'apt clean && apt autoclean'" },
+        { "name": "dnf", "path": "dnf", "type": "command", "command": "dnf clean all" },
 
-        "flatpak",
-        "snap",
+        { "name": "flatpak", "path": "flatpak", "type": "command", "command": "flatpak uninstall --unused" },
+        { "name": "snap", "path": "snap", "type": "command", "command": "rm -rf /var/lib/snapd/cache/*" },
 
-        "journalctl (systemd logs)"
+        { "name": "journalctl", "path": "journalctl", "type": "command", "command": "journalctl --vacuum-time=2weeks" }
       ]
     }
   ]

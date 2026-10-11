@@ -20,6 +20,8 @@ set(SOURCES
     src/core/cli_tools.cpp
 
     src/ui/main_window.cpp
+    src/ui/message_dialog_helper.cpp
+    src/ui/ui_helper.cpp
 
     src/utils/console_logger.cpp
     src/utils/args_parser.cpp

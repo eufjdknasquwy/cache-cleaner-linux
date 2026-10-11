@@ -1,18 +1,35 @@
 #include "core/cleaner.h"
 #include "config_loader.h"
 #include "constants.h"
+#include "core/danger_level.h"
 #include "utils/system_detector.h"
 #include <filesystem>
 #include <giomm/file.h>
 #include <iostream>
 namespace fs = std::filesystem;
+core::Config const &core::CacheCleaner::m_config = core::ConfigLoader::get_config();
+core::CacheCleaner::ClearReport core::CacheCleaner::m_del_result;
+std::string core::CacheCleaner::expand_tilde(const std::string &path)
+{
+    if (!path.empty() && path[0] == '~')
+    {
+        std::string clean_path = path;
+        clean_path.replace(0, 1, get_home_dir().string());
+        return clean_path;
+    }
+    return path;
+}
 bool core::CacheCleaner::exists(const std::string &path_str)
 {
-    auto paths = core::ConfigLoader::get_config().known_paths;
+    std::map<std::string, DangerLevel> paths;
+    for (const auto &cache : core::ConfigLoader::get_config().entries)
+    {
+        paths[cache.path] = cache.danger;
+    }
     auto it = paths.find(path_str);
     if (it == paths.end())
         return false;
-    auto path_danger = it->second;
+    const DangerLevel path_danger = it->second;
     if (path_danger != core::DangerLevel::System)
     {
         if (!path_str.empty() && path_str[0] == '~')
@@ -37,14 +54,73 @@ bool core::CacheCleaner::exists(const std::string &path_str)
         return false;
     }
 }
+uint core::CacheCleaner::size(const std::string &path_str)
+{
+    auto path = expand_tilde(path_str);
+    std::error_code ec;
+    for (const auto &entry : m_config.entries)
+    {
+        if (entry.danger == DangerLevel::System && (entry.name == path_str || entry.name == path))
+        {
+            return UINT32_MAX;
+        }
+    }
+    if (!fs::is_directory(path))
+    {
+        auto size = fs::file_size(path, ec);
+        if (ec)
+        {
+            std::cerr << "Error: " << ec.message() << "\n";
+        }
+        return size;
+    }
+    std::uintmax_t total = 0;
+    for (const auto &entry : fs::recursive_directory_iterator(path, fs::directory_options::skip_permission_denied, ec))
+    {
+        if (ec)
+        {
+            ec.clear();
+            continue;
+        }
+        if (entry.is_regular_file(ec))
+        {
+            auto s = entry.file_size(ec);
+            if (!ec)
+                total += s;
+        }
+    }
+    return total;
+}
+std::string core::CacheCleaner::format_size(std::uintmax_t bytes)
+{
+    const char *units[] = {"B", "KB", "MB", "GB", "TB"};
+    double size = static_cast<double>(bytes);
+    int unit = 0;
+
+    while (size >= 1024.0 && unit < 4)
+    {
+        size /= 1024.0;
+        ++unit;
+    }
+
+    char buf[32];
+    if (unit == 0)
+        std::snprintf(buf, sizeof(buf), "%ju %s", bytes, units[unit]);
+    else if (unit == 1)
+        std::snprintf(buf, sizeof(buf), "%.0f %s", size, units[unit]);
+    else
+        std::snprintf(buf, sizeof(buf), "%.1f %s", size, units[unit]);
+
+    return buf;
+}
 /** Sorts out cache in std::vector and then calls the clear_cache function
  * @ param dirty_paths_to_clear: std::vector with unparsed cache paths
  */
-void core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear)
+core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear)
 {
     std::vector<std::string> filtered_paths;
     const std::string home_path_str = get_home_dir().string();
-    for (std::string path : dirty_paths_to_clear)
+    for (const std::string &path : dirty_paths_to_clear)
     {
         if (!path.empty() && path[0] == '~') // проверка на home директорию
         {
@@ -58,49 +134,33 @@ void core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_
         }
     }
     clear_cache(filtered_paths);
+    return m_del_result;
 }
 /** Clears cache
  * @ param paths_to_clear: vector with cache paths, that need to be cleared
  */
 void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_clear)
 {
+    m_del_result.paths.clear();
+    m_del_result.commands.clear();
     const fs::path home_path = get_home_dir();
 
     // aur helpers
     fs::path yay_dir = (home_path / ".cache/yay").lexically_normal();
     fs::path paru_dir = (home_path / ".cache/paru").lexically_normal();
 
-    // package managers and programming languages
-    fs::path pip_dir = (home_path / ".cache/pip").lexically_normal();
-    fs::path go_dir = (home_path / ".cache/go-build").lexically_normal();
-    fs::path nuget_dir = (home_path / ".nuget/packages").lexically_normal();
-    fs::path npm_dir = (home_path / ".npm/_cacache").lexically_normal();
+    std::set<std::string> root_paths;
+    std::map<std::string, std::string> command_paths;
 
-    fs::path pacman = "pacman";
-    fs::path apt = "apt";
-    fs::path dnf = "dnf";
+    for (const auto &entry : m_config.entries)
+    {
+        if (entry.danger == DangerLevel::System)
+            root_paths.insert(entry.name);
 
-    fs::path flatpak = "flatpak";
-    fs::path snap = "snap";
-
-    fs::path journalctl = "journalctl (systemd logs)";
-
-    static const std::set<std::string> root_paths = {pacman.string(),  apt.string(),  dnf.string(),
-                                                     flatpak.string(), snap.string(), journalctl.string()};
-    static const std::map<std::string, std::string> command_paths = {
-        {pip_dir.string(), "pip cache purge"},
-        {go_dir.string(), "go clean -cache -fuzzcache"},
-        {nuget_dir.string(), "dotnet nuget locals all --clear"},
-        {npm_dir.string(), "npm cache clean --force"},
-        {pacman.string(), "pacman -Scc --noconfirm"},
-        {apt.string(), "sh -c 'apt clean && apt autoclean'"},
-        {dnf.string(), "dnf clean all"},
-        {flatpak.string(), "flatpak uninstall --unused"},
-        {snap.string(), "rm -rf /var/lib/snapd/cache/*"},
-        {journalctl.string(), "journalctl --vacuum-time=2weeks"},
-    };
+        if (entry.type == "command" && entry.command != "")
+            command_paths[entry.name] = entry.command;
+    }
     static const std::set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};
-
     for (const std::string &path_str : paths_to_clear)
     {
         fs::path path = fs::path(path_str).lexically_normal();
@@ -109,7 +169,8 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
             std::cout << "File or directory " << path << " does not exist, proceeding" << std::endl;
             continue;
         }
-        if (fs::exists(yay_dir) && fs::exists(path) && fs::equivalent(path, yay_dir))
+        // if (fs::exists(yay_dir) && fs::exists(path) && fs::equivalent(path, yay_dir))
+        if (path == yay_dir)
         {
             std::cout << "Deleting yay cache..." << std::endl;
             for (const auto &entry : fs::directory_iterator(yay_dir))
@@ -118,7 +179,8 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
                     del_to_trash(entry);
             }
         }
-        else if (fs::exists(paru_dir) && fs::exists(path) && fs::equivalent(path, paru_dir))
+        // else if (fs::exists(paru_dir) && fs::exists(path) && fs::equivalent(path, paru_dir))
+        else if (path == paru_dir)
         {
             std::cout << "Deleting paru cache..." << std::endl;
             for (const auto &entry : fs::directory_iterator(paru_dir))
@@ -147,8 +209,9 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
             std::cout << "Deleting " << path << "\n";
             if (fs::is_directory(path))
             {
-                for (const auto &entry : fs::directory_iterator(path))
-                    del_to_trash(entry);
+                del_to_trash(path);
+                // for (const auto &entry : fs::directory_iterator(path))
+                //     del_to_trash(entry);
             }
             else
             {
@@ -160,26 +223,31 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
 void core::CacheCleaner::run_command(const std::string &command)
 {
     std::cout << "Running: " << command << "\n";
+    int ret = 0;
+    std::string out, err;
     try
     {
-        int ret = 0;
-        std::string out, err;
         Glib::spawn_command_line_sync(command, &out, &err, &ret);
-        if (ret != 0)
-            std::cerr << "Command failed (" << ret << "): " << err << "\n";
+        if (ret == 0)
+            std::cout << "Command succeeded: " << command << "\n";
+        else
+            std::cerr << "Command failed (status " << ret << "): " << err << "\n";
     }
     catch (const Glib::Error &e)
     {
         std::cerr << "Failed to run " << command << ": " << e.what() << "\n";
     }
+    m_del_result.commands[command] = ret;
 }
 void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry)
 {
+    auto path = entry.path().string();
     try
     {
-        auto file = Gio::File::create_for_path(entry.path().string());
+        auto file = Gio::File::create_for_path(path);
         file->trash();
-        std::cout << "Deleted " << entry.path() << "\n";
+        std::cout << "Deleted " << path << "\n";
+        m_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {
@@ -193,13 +261,15 @@ void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry)
         }
     }
 }
-void core::CacheCleaner::del_to_trash(const fs::path &path)
+void core::CacheCleaner::del_to_trash(const fs::path &fs_path)
 {
+    auto path = fs_path.string();
     try
     {
-        auto file = Gio::File::create_for_path(path.string());
+        auto file = Gio::File::create_for_path(path);
         file->trash();
         std::cout << "Deleted " << path << "\n";
+        m_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {

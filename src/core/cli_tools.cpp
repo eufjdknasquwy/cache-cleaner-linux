@@ -12,10 +12,10 @@ bool core::cli::CliTools::ask_confirmation(const char *prompt)
 void core::cli::CliTools::delete_category(core::DangerLevel danger)
 {
     core::ConfigLoader::load_config();
-    std::vector<std::string> dirty_paths = core::ConfigLoader::get_paths_by_danger(danger);
+    auto dirty_paths = core::ConfigLoader::get_paths_by_danger(danger);
     std::vector<std::string> paths;
 
-    for (auto path : dirty_paths)
+    for (const auto &[name, path] : dirty_paths)
     {
         if (core::CacheCleaner::exists(path))
             paths.push_back(path);
@@ -54,38 +54,38 @@ void core::cli::CliTools::delete_category(core::DangerLevel danger)
 void core::cli::CliTools::list_category(core::DangerLevel danger)
 {
     core::ConfigLoader::load_config();
-    std::vector<std::string> paths = core::ConfigLoader::get_paths_by_danger(danger);
+    auto paths = core::ConfigLoader::get_paths_by_danger(danger);
 }
 std::vector<std::string> core::cli::CliTools::list_all_categories()
 {
     core::ConfigLoader::load_config();
-    std::vector<std::string> safe_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Safe);
-    std::vector<std::string> warning_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Warning);
-    std::vector<std::string> unknown_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Unknown);
-    std::vector<std::string> system_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::System);
-    std::vector<std::string> user_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::User);
+    auto safe_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Safe);
+    auto warning_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Warning);
+    auto unknown_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::Unknown);
+    auto system_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::System);
+    auto user_paths = core::ConfigLoader::get_paths_by_danger(core::DangerLevel::User);
     std::vector<std::string> all_paths;
-    for (auto path : safe_paths)
+    for (const auto &[name, path] : safe_paths)
     {
         if (core::CacheCleaner::exists(path))
             all_paths.push_back(path);
     }
-    for (auto path : warning_paths)
+    for (const auto &[name, path] : warning_paths)
     {
         if (core::CacheCleaner::exists(path))
             all_paths.push_back(path);
     }
-    for (auto path : unknown_paths)
+    for (const auto &[name, path] : unknown_paths)
     {
         if (core::CacheCleaner::exists(path))
             all_paths.push_back(path);
     }
-    for (auto path : system_paths)
+    for (const auto &[name, path] : system_paths)
     {
         if (core::CacheCleaner::exists(path))
             all_paths.push_back(path);
     }
-    for (auto path : user_paths)
+    for (const auto &[name, path] : user_paths)
     {
         if (core::CacheCleaner::exists(path))
             all_paths.push_back(path);

@@ -44,9 +44,9 @@ Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleanin
 
 ### Cache support
 - AUR helpers: `yay`, `paru`
-- Languages: `pip`, `go`, `nuget`, `npm`
-- System: `pacman`, `apt`, `dnf`, `flatpak`, `snap`
-- Logs: `journalctl`
+- Programming languages: `pip`, `go`, `nuget`, `npm`
+- System package managers: `pacman`, `apt`, `dnf`, `flatpak`, `snap`
+- System: `journalctl`
 
 ### Config
 - `categories.json` — built-in
@@ -102,9 +102,9 @@ Example:
     {
       "category": "User",
       "danger_level": "User",
-      "paths": [
-        "~/.cache/my-app",
-        "~/.local/share/my-app/cache"
+      "entries": [
+        { "name": "my-app", "path": "~/.cache/my-app", "type": "path" },
+        { "name": "some-app", "path": "~/some-app", "type": "command", "command": "some-app --clean-cache" }
       ]
     }
   ]
@@ -115,15 +115,12 @@ Example:
 
 - Linux only
 - Root caches require polkit agent
-- On headless servers, use CLI mode (`--list`, `--delete-x`); root caches need
-  `sudo` manually
+- On headless servers, use CLI mode (`--list`, `--delete-x`)
 
 ## Known issues (problems)
 
-- `user_categories.json` may crash the program on parse error
-- No `--dry-run` yet
+- No `--dry-run`
 - No `--yes` flag for scripts / cron
-- No report after cleaning
 - No fallback to `sudo` if `pkexec` is unavailable
 
 ## Roadmap
@@ -135,14 +132,17 @@ Example:
 - [x] Confirmation dialogs for dangerous categories
 - [x] Root-cleaning via `pkexec`
 - [x] Basic CLI mode (`--list`, `--delete-x`)
+- [x] Report after cleaning
+- [x] Cache size
 
 ### Planned
 - [ ] App tray
 - [ ] GTK4
 - [ ] `--dry-run`
 - [ ] `--yes` for scripts
-- [ ] Report after cleaning
 - [ ] Better security
+- [ ] Logging
+- [ ] Error GUI messages
 
 ## License
 

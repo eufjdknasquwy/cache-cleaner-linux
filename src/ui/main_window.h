@@ -19,11 +19,16 @@ namespace ui
             }
 
         private:
+            static constexpr int MIN_WIN_WIDTH = 400;
+            static constexpr int MIN_WIN_HEIGHT = 500;
+
             static constexpr int DEFAULT_WIN_WIDTH = 650;
             static constexpr int DEFAULT_WIN_HEIGHT = 800;
+
             static constexpr int DEFAULT_MARGIN = 10;
             static constexpr int DEFAULT_SPACING = 5;
             static constexpr int DEFAULT_PADDING = 0;
+            static constexpr int DEFAULT_INDENT = 40;
 
             static constexpr const char *SAFE_EXPANDER_TITLE = "Safe to clear cache";
             static constexpr const char *SAFE_EXPANDER_DESC = "this cache is safe to clear";
@@ -58,16 +63,15 @@ namespace ui
 
             Gtk::Button *m_close_button = nullptr;
             Gtk::Button *m_scan_cache_button = nullptr;
+            Gtk::Button *m_scan_size_button = nullptr;
 
             void fill_content_box();
             void fill_bottom_box();
 
             void scan_cache();
+            void scan_size();
 
             Gtk::Expander *create_category(const std::string &title, const std::string &desc,
-                                           const std::vector<std::string> &paths);
-
-            void clear_box(Gtk::Box &box);
-            static void set_margin(Gtk::Widget &widget, int size);
+                                           const std::map<std::string, std::string> &paths);
     };
 } // namespace ui

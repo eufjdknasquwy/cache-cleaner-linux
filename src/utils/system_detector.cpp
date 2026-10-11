@@ -24,19 +24,19 @@ void utils::SystemDetector::detect_package_manager(const std::string &distro_id)
     if (distro_id == "arch")
         m_package_managers.names.insert("pacman");
 
-    else if (distro_id == "debian")
+    if (distro_id == "debian")
         m_package_managers.names.insert("apt");
 
-    else if (distro_id == "ubuntu")
+    if (distro_id == "ubuntu")
         m_package_managers.names.insert("apt");
 
-    else if (distro_id == "fedora")
+    if (distro_id == "fedora")
         m_package_managers.names.insert("dnf");
 
     // other package managers
     detect_pm_by_command("which flatpak", "flatpak");
     detect_pm_by_command("which snap", "snap");
-    detect_pm_by_command("which journalctl", "journalctl (systemd logs)");
+    detect_pm_by_command("which journalctl", "journalctl");
 }
 void utils::SystemDetector::detect_pm_by_command(const std::string &command, const std::string &pm_name)
 {
