@@ -122,6 +122,7 @@ Example:
 - No `--yes` flag for scripts / cron
 - No fallback to `sudo` if `pkexec` is unavailable
 - No support for many package managers
+- Logging in one file for every session, instead of log per session
 
 ## Roadmap
 
