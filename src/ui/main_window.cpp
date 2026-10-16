@@ -3,6 +3,7 @@
 #include "core/config_loader.h"
 #include "message_dialog_helper.h"
 #include "ui_helper.h"
+#include <gtkmm/checkbutton.h>
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 {
@@ -18,9 +19,9 @@ ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
             if (app)
                 app->quit();
             return true;
-        }); // подписка на сигнал закрытия окна (закрывает программу)
+        }); // closes program
 
-    Gtk::Label *title = Gtk::manage(new Gtk::Label()); // рамка
+    Gtk::Label *title = Gtk::manage(new Gtk::Label()); // window title
     title->set_markup("<b>Cache cleaner</b>");
     title->set_halign(Gtk::ALIGN_START);
 
@@ -43,8 +44,8 @@ ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 
     m_top_box->pack_start(*title, false, false, DEFAULT_PADDING);
 
-    fill_content_box(); // заполнение середины окна
-    fill_bottom_box();  // заполнение нижней части окна
+    fill_content_box(); // fills middle part of the window
+    fill_bottom_box();  // fills bottom menu of the window
 }
 void ui::MainWindow::fill_content_box()
 {
@@ -98,11 +99,11 @@ void ui::MainWindow::fill_bottom_box()
     m_scan_size_button->signal_clicked().connect([this]() { scan_size(); });
     m_bottom_box->pack_end(*m_scan_size_button, false, false, 5);
 }
-void ui::MainWindow::scan_cache() // обновить все категории и ихние кэши
+void ui::MainWindow::scan_cache() // update all categories
 {
-    core::ConfigLoader::load_config();       // пересканирование путей из файла
-    ui::UIHelper::clear_box(*m_content_box); // очистка категорий
-    fill_content_box();                      // заполнение категорий
+    core::ConfigLoader::load_config();       // scans caches
+    ui::UIHelper::clear_box(*m_content_box); // clear categories
+    fill_content_box();                      // fill categories
 
     m_safe_expander = nullptr;
     m_warning_expander = nullptr;
@@ -127,12 +128,48 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     scroll->set_propagate_natural_height(true);
 
     Gtk::Box *listbox = Gtk::manage(new Gtk::Box());
-    // listbox->set_selection_mode(Gtk::SELECTION_NONE);
 
     Gtk::ListBoxRow *listbox_row = Gtk::manage(new Gtk::ListBoxRow());
 
     Gtk::Box *box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, DEFAULT_SPACING));
     ui::UIHelper::set_margin(*box, DEFAULT_MARGIN);
+
+    Gtk::Label *desc_label = Gtk::manage(new Gtk::Label(desc));
+    desc_label->set_halign(Gtk::ALIGN_START);
+    box->add(*desc_label);
+
+    // treeview creation
+
+    auto columns = std::make_shared<ModelColumns>();
+    Glib::RefPtr<Gtk::ListStore> ref_list_store = Gtk::ListStore::create(*columns);
+
+    Gtk::TreeView *treeview = Gtk::manage(new Gtk::TreeView());
+    treeview->set_model(ref_list_store);
+
+    auto *toggle = Gtk::manage(new Gtk::CellRendererToggle());
+
+    toggle->signal_toggled().connect(
+        [this, columns, ref_list_store, toggle](const Glib::ustring &path)
+        {
+            auto iter = ref_list_store->get_iter(Gtk::TreeModel::Path(path));
+            if (iter)
+            {
+                auto row = *iter;
+                row[columns->column_selected] = !row[columns->column_selected];
+            }
+        });
+
+    int toggle_column = treeview->append_column("" /*"Choose"*/, *toggle);
+    treeview->get_column(toggle_column - 1)->add_attribute(toggle->property_active(), columns->column_selected);
+
+    treeview->append_column("Name", columns->column_name);
+    treeview->append_column("Path", columns->column_path);
+    treeview->append_column("Size", columns->column_size);
+
+    box->add(*treeview);
+
+    //
+
     Gtk::Box *bottom_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, DEFAULT_SPACING));
 
     expander->add(*scroll);
@@ -140,26 +177,36 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     listbox->add(*listbox_row);
     listbox_row->add(*box);
 
-    Gtk::Label *desc_label = Gtk::manage(new Gtk::Label(desc));
-    desc_label->set_halign(Gtk::ALIGN_START);
-    box->add(*desc_label);
+    std::vector<CacheRow> cache_rows;
 
-    std::vector<std::string> existing_paths;
-    std::vector<std::pair<Gtk::CheckButton *, std::string>> check_buttons;
     for (const auto &[name, path] : paths)
     {
         if (!core::CacheCleaner::exists(path))
             continue;
-        existing_paths.push_back(path);
 
         std::uintmax_t bytes = core::CacheCleaner::size(path);
-        std::string size_str = bytes == UINT32_MAX ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
-        auto label = name + "\t" + "  " + size_str;
+        std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
 
-        Gtk::CheckButton *check_button = Gtk::manage(new Gtk::CheckButton(label));
-        box->add(*check_button);
+        cache_rows.push_back({name, path, bytes, size_str, false});
+    }
+    std::sort(cache_rows.begin(), cache_rows.end(),
+              [](const CacheRow &a, const CacheRow &b)
+              {
+                  bool a_unknown = (a.bytes == UNKNOWN_SIZE);
+                  bool b_unknown = (b.bytes == UNKNOWN_SIZE);
 
-        check_buttons.push_back({check_button, name});
+                  if (a_unknown != b_unknown)
+                      return !a_unknown;
+
+                  return a.bytes > b.bytes;
+              });
+    for (const auto &r : cache_rows) // adds cache rows
+    {
+        auto row = *(ref_list_store->append());
+        row[columns->column_selected] = r.selected;
+        row[columns->column_name] = r.name;
+        row[columns->column_path] = r.path;
+        row[columns->column_size] = r.size_str;
     }
 
     box->add(*bottom_box);
@@ -169,7 +216,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     bottom_box->pack_start(*clear_selected, false, false, 5);
     bottom_box->pack_start(*choose_everything, false, false, 5);
 
-    if (existing_paths.size() > 0)
+    if (cache_rows.size() > 0)
     {
         expander->show_all();
     }
@@ -179,16 +226,26 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     }
 
     clear_selected->signal_clicked().connect(
-        [this, box, expander, paths, check_buttons]()
+        [this, box, expander, columns, ref_list_store, paths]()
         {
             std::vector<std::string> paths_to_clear;
-            for (auto &[check, name] : check_buttons)
+            // for (auto &[check, name] : check_buttons)
+            // {
+            //     if (check->get_active())
+            //     {
+            //         auto it = paths.find(name);
+            //         if (it != paths.end())
+            //             paths_to_clear.push_back(it->second);
+            //     }
+            // }
+            auto children = ref_list_store->children();
+            for (auto iter = children.begin(); iter != children.end(); ++iter)
             {
-                if (check->get_active())
+                auto row = *iter;
+                if (row[columns->column_selected])
                 {
-                    auto it = paths.find(name);
-                    if (it != paths.end())
-                        paths_to_clear.push_back(it->second);
+                    std::string path = row[columns->column_path];
+                    paths_to_clear.push_back(path);
                 }
             }
             bool is_safe = (expander->get_label() == SAFE_EXPANDER_TITLE);
@@ -210,13 +267,13 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
             {
                 if (paths_to_clear.size() <= 0)
                     return;
-                Gtk::MessageDialog dialog1("Are you sure you want to clear this cache?\nThis may break some programs.",
+                Gtk::MessageDialog dialog1("Are you sure you want to clear this cache?\nThis may break some programs",
                                            false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
 
                 if (dialog1.run() != Gtk::RESPONSE_YES)
                     return;
 
-                Gtk::MessageDialog dialog2("Totally sure?\nThis can break your system.", false, Gtk::MESSAGE_WARNING,
+                Gtk::MessageDialog dialog2("Totally sure?\nThis can break your system", false, Gtk::MESSAGE_WARNING,
                                            Gtk::BUTTONS_YES_NO, false);
 
                 if (dialog2.run() == Gtk::RESPONSE_YES)
@@ -227,29 +284,44 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
                 }
             }
 
-            for (Gtk::Widget *widget : box->get_children())
+            // for (Gtk::Widget *widget : box->get_children())
+            // {
+            //     if (auto *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
+            //     {
+            //         if (check_button->get_active())
+            //             check_button->set_active(false);
+            //     }
+            //     else
+            //         continue;
+            // }
+            for (auto iter = children.begin(); iter != children.end(); ++iter)
             {
-                if (Gtk::CheckButton *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
-                {
-                    if (check_button->get_active())
-                        check_button->set_active(false);
-                }
-                else
-                    continue;
+                auto row = *iter;
+                if (row[columns->column_selected])
+                    row[columns->column_selected] = false;
             }
         });
 
     choose_everything->signal_toggled().connect(
-        [box, choose_everything]()
+        [box, choose_everything, columns, ref_list_store]()
         {
-            for (Gtk::Widget *widget : box->get_children())
+            // for (Gtk::Widget *widget : box->get_children())
+            // {
+            //     if (auto *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
+            //     {
+            //         check_button->set_active(choose_everything->get_active());
+            //     }
+            //     else
+            //         continue;
+            // }
+            auto children = ref_list_store->children();
+            for (auto iter = children.begin(); iter != children.end(); ++iter)
             {
-                if (Gtk::CheckButton *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
+                auto row = *iter;
+                if (row[columns->column_selected])
                 {
-                    check_button->set_active(choose_everything->get_active());
+                    row[columns->column_selected] = choose_everything->get_active();
                 }
-                else
-                    continue;
             }
         });
 

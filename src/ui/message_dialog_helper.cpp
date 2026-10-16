@@ -12,8 +12,7 @@ void ui::MessageDialogHelper::spawn_error_dialog()
 void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearReport &del_result)
 {
     auto [dialog, box, listbox] =
-        create_dialog("Cache cleaner: deletion complete",
-                      "Cache has been successfully cleaned!\nYou can restore them in your user trash bin");
+        create_dialog("Cache cleaner: deletion complete", "Cache has been successfully cleaned!");
 
     if (!del_result.paths.empty())
     {
@@ -31,7 +30,7 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearRepor
         for (const auto &[command, status_code] : del_result.commands)
         {
             auto *row = Gtk::manage(new Gtk::ListBoxRow());
-            auto *path_label = Gtk::manage(new Gtk::Label(command + " : " + std::to_string(status_code)));
+            auto *path_label = Gtk::manage(new Gtk::Label(command + "( status " + std::to_string(status_code) + " )"));
             path_label->set_halign(Gtk::ALIGN_START);
             row->add(*path_label);
             listbox->add(*row);

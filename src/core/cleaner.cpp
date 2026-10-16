@@ -9,8 +9,8 @@
 #include <giomm/file.h>
 #include <string>
 namespace fs = std::filesystem;
-core::Config const &core::CacheCleaner::m_config = core::ConfigLoader::get_config();
-core::CacheCleaner::ClearReport core::CacheCleaner::m_del_result;
+core::Config const &core::CacheCleaner::s_config = core::ConfigLoader::get_config();
+core::CacheCleaner::ClearReport core::CacheCleaner::s_del_result;
 std::string core::CacheCleaner::expand_tilde(const std::string &path)
 {
     if (!path.empty() && path[0] == '~')
@@ -60,7 +60,7 @@ uintmax_t core::CacheCleaner::size(const std::string &path_str)
 {
     auto path = expand_tilde(path_str);
     std::error_code ec;
-    for (const auto &entry : m_config.entries)
+    for (const auto &entry : s_config.entries)
     {
         if (entry.danger == DangerLevel::System && (entry.path == path_str || entry.path == path))
         {
@@ -137,7 +137,7 @@ core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector
         }
     }
     clear_cache(filtered_paths, options);
-    return m_del_result;
+    return s_del_result;
 }
 /** Clears cache
  * @ param paths_to_clear: vector with cache paths, that need to be cleared
@@ -146,8 +146,8 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
 {
     if (options.cli)
         Gio::init();
-    m_del_result.paths.clear();
-    m_del_result.commands.clear();
+    s_del_result.paths.clear();
+    s_del_result.commands.clear();
     const fs::path home_path = get_home_dir();
 
     // aur helpers
@@ -157,7 +157,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
     std::set<std::string> root_paths;
     std::map<std::string, std::string> command_paths;
 
-    for (const auto &entry : m_config.entries)
+    for (const auto &entry : s_config.entries)
     {
         if (entry.danger == DangerLevel::System)
             root_paths.insert(entry.name);
@@ -257,7 +257,7 @@ void core::CacheCleaner::run_command(const std::string &command, const ClearOpti
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
     }
-    m_del_result.commands[command] = ret;
+    s_del_result.commands[command] = ret;
 }
 void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry, const ClearOptions &options)
 {
@@ -272,7 +272,7 @@ void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry, const Cl
         auto file = Gio::File::create_for_path(path);
         file->trash();
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
-        m_del_result.paths.insert(path);
+        s_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {
@@ -301,7 +301,7 @@ void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOption
         auto file = Gio::File::create_for_path(path);
         file->trash();
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
-        m_del_result.paths.insert(path);
+        s_del_result.paths.insert(path);
     }
     catch (const Glib::Error &e)
     {

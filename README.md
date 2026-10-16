@@ -138,16 +138,21 @@ Example:
 - [x] Logging
 - [x] `--dry-run`
 - [x] `--yes` for scripts
+- [x] Cache sorts out by descending
 
 ### Planned
-- [ ] App tray
 - [ ] GTK4 instead of GTK3
 - [ ] Error messages in GUI
 - [ ] Cleaning logs for not only systemd
-- [ ] Scan size
-- [ ] Delete everything in user trash
+- [ ] Scan size button
+- [ ] `Clear trash` button
 - [ ] Async operations for performance
 - [ ] Custom CSS and animations
+- [ ] Progress bar when deleting
+- [ ] Ability to cancel deletion
+- [ ] DE integration (notifications, tray)
+- [ ] Export clear report to JSON
+- [ ] Cache searching in categories
 
 ## License
 

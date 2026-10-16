@@ -12,14 +12,14 @@ using json = nlohmann::json;
 namespace fs = std::filesystem;
 namespace core
 {
-    Config ConfigLoader::m_config;
+    Config ConfigLoader::s_config;
 } // namespace core
 /** Loads config from json
  */
 std::map<std::string, std::string> core::ConfigLoader::get_paths_by_danger(core::DangerLevel danger)
 {
     std::map<std::string, std::string> names_and_paths;
-    for (const auto &entry : m_config.entries)
+    for (const auto &entry : s_config.entries)
     {
         if (entry.danger == danger)
             names_and_paths[entry.name] = entry.path;
@@ -32,7 +32,7 @@ int core::ConfigLoader::load_json_file(std::ifstream &config_file, json &json_co
     {
         config_file.open(path);
         if (!config_file.is_open())
-            throw std::runtime_error("Cannot open config");
+            throw std::runtime_error("Failed openning config");
         json_config = json::parse(config_file, nullptr, true, true);
         return 0;
     }
@@ -52,7 +52,8 @@ int core::ConfigLoader::load_json_file(std::ifstream &config_file, json &json_co
     }
     catch (const std::exception &e)
     {
-        utils::ConsoleLogger::log(core::LogLevel::Error, "Caught an unexpected error: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  "Unexpected error occured while trying to parse settings file: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         return 1;
     }
@@ -65,7 +66,7 @@ void core::ConfigLoader::load_config()
     if (load_json_file(config_file, json_config, get_categories_dir().string()) != 0)
         return;
 
-    m_config.entries.clear();
+    s_config.entries.clear();
     const auto categories = json_config["categories"];
     for (const auto &category : categories)
     {
@@ -99,7 +100,7 @@ void core::ConfigLoader::load_config()
 
             cache.danger = danger;
 
-            m_config.entries.push_back(cache);
+            s_config.entries.push_back(cache);
         }
     }
     load_user_config(); // loads user config from user json
@@ -143,7 +144,7 @@ void core::ConfigLoader::load_user_config()
 
             cache.danger = DangerLevel::User;
 
-            m_config.entries.push_back(cache);
+            s_config.entries.push_back(cache);
         }
     }
 }
@@ -175,7 +176,6 @@ void core::ConfigLoader::ensure_user_config_exists()
             return;
         }
         out << DEFAULT_USER_CONFIG;
-        // out.close();
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Created default config: " + config_file.string()));
     }
 }

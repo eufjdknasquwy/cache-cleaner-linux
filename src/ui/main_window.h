@@ -30,6 +30,8 @@ namespace ui
             static constexpr int DEFAULT_PADDING = 0;
             static constexpr int DEFAULT_INDENT = 40;
 
+            static constexpr std::uintmax_t UNKNOWN_SIZE = UINT32_MAX;
+
             static constexpr const char *SAFE_EXPANDER_TITLE = "Safe to clear cache";
             static constexpr const char *SAFE_EXPANDER_DESC = "this cache is safe to clear";
 
@@ -73,5 +75,30 @@ namespace ui
 
             Gtk::Expander *create_category(const std::string &title, const std::string &desc,
                                            const std::map<std::string, std::string> &paths);
+
+            struct CacheRow
+            {
+                    std::string name;
+                    std::string path;
+                    std::uintmax_t bytes;
+                    std::string size_str;
+                    bool selected = false;
+            };
+
+            class ModelColumns : public Gtk::TreeModelColumnRecord
+            {
+                public:
+                    ModelColumns()
+                    {
+                        add(column_selected);
+                        add(column_name);
+                        add(column_path);
+                        add(column_size);
+                    }
+                    Gtk::TreeModelColumn<bool> column_selected;
+                    Gtk::TreeModelColumn<std::string> column_name;
+                    Gtk::TreeModelColumn<std::string> column_path;
+                    Gtk::TreeModelColumn<std::string> column_size;
+            };
     };
 } // namespace ui

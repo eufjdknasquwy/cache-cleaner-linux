@@ -23,8 +23,8 @@ namespace core
             static std::string format_size(std::uintmax_t bytes);
 
         private:
-            static ClearReport m_del_result;
-            static const Config &m_config;
+            static ClearReport s_del_result;
+            static const Config &s_config;
 
             static std::string expand_tilde(const std::string &path);
             static void clear_cache(const std::vector<std::string> &paths_to_clear, const core::ClearOptions &options);

@@ -6,10 +6,7 @@ int main(int argc, char *argv[])
     utils::ArgsParser::parse(argc, argv);
     core::ConfigLoader::load_config();
 
-    std::string home = std::getenv("HOME") ? std::getenv("HOME") : "/tmp";
-    std::string log_path = home + "/.local/state/cache-cleaner/log.txt";
-
-    utils::ConsoleLogger::init(log_path);
+    utils::ConsoleLogger::init();
     utils::SystemDetector::list_detections();
 
     auto app = Gtk::Application::create("org.example.cache-cleaner");

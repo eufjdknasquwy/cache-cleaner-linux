@@ -13,11 +13,11 @@ namespace utils
             static const PackageManagers &get_pms()
             {
                 detect_distribution();
-                return m_package_managers;
+                return s_package_managers;
             }
 
         private:
-            static PackageManagers m_package_managers;
+            static PackageManagers s_package_managers;
 
             static void detect_distribution();
             static void detect_package_managers(const std::string &distro_id);

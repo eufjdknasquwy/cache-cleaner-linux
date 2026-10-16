@@ -25,7 +25,7 @@ namespace core
             static std::map<std::string, std::string> get_paths_by_danger(core::DangerLevel danger);
             static const core::Config &get_config()
             {
-                return m_config;
+                return s_config;
             }
 
         private:
@@ -43,7 +43,7 @@ namespace core
 })";
 
             static DangerLevel parse_danger_level(const std::string &d);
-            static core::Config m_config;
+            static core::Config s_config;
 
             static void load_user_config();
             static int load_json_file(std::ifstream &config_file, json &json_config, const std::string &path);
