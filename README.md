@@ -23,7 +23,7 @@ package managers and user-added directories
 
 **Alpha (v0.3.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
 and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journald`.
-Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleaning via polkit.
+Supports GUI and CLI modes.
 
 ## Screenshots
 
@@ -52,7 +52,7 @@ Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleanin
 
 ### Config
 - `categories.json` — built-in
-- `~/.config/cache-cleaner/user_categories.json` — user paths (auto-created)
+- `~/.config/cache-cleaner/user_categories.json` — user path
 
 ## How it works
 
@@ -61,7 +61,7 @@ Supports GUI and CLI modes. Confirmations for dangerous categories, Root-cleanin
 3. When you click **Clear selected**:
    - **User caches** are moved to trash
    - **System caches** are cleared via `pkexec` (sudo command)
-4. Confirmation dialogs for `Warning` / `Unknown` categories
+4. Confirmation dialogs for dangerous categories
 
 ## Dependencies
 
@@ -122,7 +122,6 @@ Example:
 
 - No fallback to `sudo` if `pkexec` is unavailable
 - No support for many package managers
-- Logging in one file for every session, instead of log per session
 
 ## Roadmap
 
