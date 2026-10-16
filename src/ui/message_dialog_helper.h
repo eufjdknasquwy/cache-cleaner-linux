@@ -10,7 +10,7 @@ namespace ui
     {
         public:
             MessageDialogHelper() = delete;
-            static void spawn_result_dialog(core::CacheCleaner::ClearReport &del_result);
+            static void spawn_result_dialog(core::ClearReport &clear_report);
             static void spawn_error_dialog();
 
         private:

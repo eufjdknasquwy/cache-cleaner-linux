@@ -197,3 +197,18 @@ core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string &d)
 
     return DangerLevel::Unknown;
 }
+void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core::ClearReport &clear_report)
+{
+    json j;
+
+    for (int i = 0; i < clear_report.paths.size(); ++i)
+    {
+        j["paths"][std::string("path" + std::to_string(i + 1))] = clear_report.paths[i];
+    }
+    for (const auto &[command, code] : clear_report.commands)
+    {
+        j["commands"][command] = code;
+    }
+
+    report_file << j.dump(4);
+}

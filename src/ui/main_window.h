@@ -1,4 +1,5 @@
 #pragma once
+#include "core/cleaner.h"
 #include "core/config_loader.h"
 #include "utils/args_parser.h"
 #include <gtkmm.h>
@@ -66,15 +67,24 @@ namespace ui
             Gtk::Button *m_close_button = nullptr;
             Gtk::Button *m_scan_cache_button = nullptr;
             Gtk::Button *m_scan_size_button = nullptr;
+            Gtk::Button *m_clear_trash_button = nullptr;
 
             void fill_content_box();
             void fill_bottom_box();
 
             void scan_cache();
             void scan_size();
+            void clear_trash_bin()
+            {
+                core::CacheCleaner::clear_trash_bin();
+            }
 
             Gtk::Expander *create_category(const std::string &title, const std::string &desc,
                                            const std::map<std::string, std::string> &paths);
+
+            bool confirm_deletion(std::vector<std::string> paths_to_clear, bool is_safe);
+            bool create_single_confirmation();
+            bool create_double_confirmation();
 
             struct CacheRow
             {

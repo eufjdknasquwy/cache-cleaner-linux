@@ -126,10 +126,10 @@ Example:
 ## Roadmap
 
 ### Done
-- [x] Cleaning package manager caches like `go`, `yay` and more
+- [x] Cleaning package manager caches like `pip`, `yay` and more
 - [x] Cleaning System caches like `pacman` or `apt` and more
 - [x] Systemd logs (`journalctl`)
-- [x] Confirmation dialogs for dangerous categories
+- [x] Confirmation dialogs before deleting
 - [x] Root-cleaning via `pkexec`
 - [x] Basic CLI mode (`--list`, `--delete-x`, `--dry-run`, `--yes`)
 - [x] Report after cleaning
@@ -138,19 +138,19 @@ Example:
 - [x] `--dry-run`
 - [x] `--yes` for scripts
 - [x] Cache sorts out by descending
+- [x] `Clear trash` button
+- [x] Export clear report to JSON
 
 ### Planned
 - [ ] GTK4 instead of GTK3
 - [ ] Error messages in GUI
 - [ ] Cleaning logs for not only systemd
 - [ ] Scan size button
-- [ ] `Clear trash` button
 - [ ] Async operations for performance
 - [ ] Custom CSS and animations
 - [ ] Progress bar when deleting
 - [ ] Ability to cancel deletion
 - [ ] DE integration (notifications, tray)
-- [ ] Export clear report to JSON
 - [ ] Cache searching in categories
 
 ## License

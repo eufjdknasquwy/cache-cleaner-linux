@@ -1,4 +1,5 @@
 #include "console_logger.h"
+#include "core/config_loader.h"
 #include "core/enums.h"
 #include <ctime>
 #include <filesystem>
@@ -7,18 +8,17 @@
 #include <iostream>
 #include <string>
 namespace fs = std::filesystem;
-std::ofstream utils::ConsoleLogger::s_file;
+std::ofstream utils::ConsoleLogger::s_log;
+std::string utils::ConsoleLogger::s_home_path = std::getenv("HOME") ? std::getenv("HOME") : "/tmp";
 void utils::ConsoleLogger::init()
 {
-    std::string home = std::getenv("HOME") ? std::getenv("HOME") : "/tmp";
-    std::string log_path = home + "/.local/state/cache-cleaner/log-" + timestamp("%Y-%m-%d_%H:%M:%S") + ".txt";
+    std::string log_path = s_home_path + "/.local/state/cache-cleaner/log-" + timestamp("%Y-%m-%d_%H:%M") + ".txt";
 
-    fs::path p(log_path);
+    fs::path log(log_path);
     std::error_code ec;
-    fs::create_directories(p.parent_path(), ec);
+    fs::create_directories(log.parent_path(), ec);
 
-    s_file.open(log_path);
-    // s_file.clear();
+    s_log.open(log_path);
 }
 void utils::ConsoleLogger::printmsg(const char *message)
 {
@@ -32,6 +32,24 @@ void utils::ConsoleLogger::print_help_msg(const int indent, const char *arg, con
 {
     std::cout << "  " << std::left << std::setw(indent) << arg << "  " << desc << std::endl;
 }
+void utils::ConsoleLogger::export_report_to_json(core::ClearReport &clear_report)
+{
+    std::string report_path =
+        s_home_path + "/.local/state/cache-cleaner/reports/clear_report-" + timestamp("%Y-%m-%d_%H:%M:%S") + ".json";
+
+    fs::path report(report_path);
+    std::error_code ec;
+    fs::create_directories(report.parent_path(), ec);
+
+    std::ofstream report_file;
+    report_file.open(report_path);
+
+    log(core::LogLevel::Info, "Exporting clear report to JSON...");
+    core::ConfigLoader::export_report_to_json(report_file, clear_report);
+    log(core::LogLevel::Info, "Exporting complete");
+
+    report_file.close();
+}
 void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &msg)
 {
     std::string full_msg = "[" + timestamp("") + "] " + "[" + level_to_str(level) + "] " + msg;
@@ -40,10 +58,10 @@ void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &ms
     else
         std::cerr << full_msg << std::endl;
 
-    if (s_file.is_open())
+    if (s_log.is_open())
     {
-        s_file << full_msg << "\n";
-        s_file.flush();
+        s_log << full_msg << "\n";
+        s_log.flush();
     }
 }
 std::string utils::ConsoleLogger::timestamp(std::string format)

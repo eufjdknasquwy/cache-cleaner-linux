@@ -1,4 +1,5 @@
 #pragma once
+#include "core/structs.h"
 #include "enums.h"
 #include <nlohmann/json_fwd.hpp>
 #include <string>
@@ -27,6 +28,7 @@ namespace core
             {
                 return s_config;
             }
+            static void export_report_to_json(std::ofstream &report_file, core::ClearReport &clear_report);
 
         private:
             static constexpr const char *DEFAULT_USER_CONFIG = R"({

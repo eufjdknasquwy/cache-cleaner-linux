@@ -1,5 +1,6 @@
 #include "message_dialog_helper.h"
 #include "ui_helper.h"
+#include "utils/console_logger.h"
 #include <gtkmm/dialog.h>
 void ui::MessageDialogHelper::spawn_error_dialog()
 {
@@ -9,14 +10,14 @@ void ui::MessageDialogHelper::spawn_error_dialog()
     // label->set_halign(Gtk::ALIGN_START);
     // box->pack_start(*label, false, false, 0);
 }
-void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearReport &del_result)
+void ui::MessageDialogHelper::spawn_result_dialog(core::ClearReport &clear_report)
 {
     auto [dialog, box, listbox] =
         create_dialog("Cache cleaner: deletion complete", "Cache has been successfully cleaned!");
 
-    if (!del_result.paths.empty())
+    if (!clear_report.paths.empty())
     {
-        for (const auto &path : del_result.paths)
+        for (const auto &path : clear_report.paths)
         {
             auto *row = Gtk::manage(new Gtk::ListBoxRow());
             auto *path_label = Gtk::manage(new Gtk::Label(path));
@@ -25,9 +26,9 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearRepor
             listbox->add(*row);
         }
     }
-    if (!del_result.commands.empty())
+    if (!clear_report.commands.empty())
     {
-        for (const auto &[command, status_code] : del_result.commands)
+        for (const auto &[command, status_code] : clear_report.commands)
         {
             auto *row = Gtk::manage(new Gtk::ListBoxRow());
             auto *path_label = Gtk::manage(new Gtk::Label(command + "( status " + std::to_string(status_code) + " )"));
@@ -40,7 +41,10 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::CacheCleaner::ClearRepor
     dialog->show_all();
     dialog->run();
     dialog->hide();
+
     delete dialog;
+
+    utils::ConsoleLogger::export_report_to_json(clear_report);
 }
 std::tuple<Gtk::Dialog *, Gtk::Box *, Gtk::ListBox *> ui::MessageDialogHelper::create_dialog(
     const std::string &dialog_title, const std::string &message)

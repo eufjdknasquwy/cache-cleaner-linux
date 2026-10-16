@@ -3,7 +3,6 @@
 #include "core/config_loader.h"
 #include "message_dialog_helper.h"
 #include "ui_helper.h"
-#include <gtkmm/checkbutton.h>
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 {
@@ -98,6 +97,10 @@ void ui::MainWindow::fill_bottom_box()
     m_scan_size_button = Gtk::manage(new Gtk::Button("Scan size"));
     m_scan_size_button->signal_clicked().connect([this]() { scan_size(); });
     m_bottom_box->pack_end(*m_scan_size_button, false, false, 5);
+
+    m_clear_trash_button = Gtk::manage(new Gtk::Button("Clear trash"));
+    m_clear_trash_button->signal_clicked().connect([this]() { clear_trash_bin(); });
+    m_bottom_box->pack_end(*m_clear_trash_button, false, false, 5);
 }
 void ui::MainWindow::scan_cache() // update all categories
 {
@@ -115,6 +118,16 @@ void ui::MainWindow::scan_cache() // update all categories
 }
 void ui::MainWindow::scan_size()
 {
+    ui::UIHelper::clear_box(*m_content_box); // clear categories
+    fill_content_box();                      // fill categories
+
+    m_safe_expander = nullptr;
+    m_warning_expander = nullptr;
+    m_unknown_expander = nullptr;
+    m_system_expander = nullptr;
+    m_user_expander = nullptr;
+
+    m_content_box->show_all();
 }
 Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const std::string &desc,
                                                const std::map<std::string, std::string> &paths)
@@ -178,7 +191,6 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     listbox_row->add(*box);
 
     std::vector<CacheRow> cache_rows;
-
     for (const auto &[name, path] : paths)
     {
         if (!core::CacheCleaner::exists(path))
@@ -216,28 +228,12 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     bottom_box->pack_start(*clear_selected, false, false, 5);
     bottom_box->pack_start(*choose_everything, false, false, 5);
 
-    if (cache_rows.size() > 0)
-    {
-        expander->show_all();
-    }
-    else
-    {
-        expander->hide();
-    }
+    cache_rows.size() > 0 ? expander->show_all() : delete expander;
 
     clear_selected->signal_clicked().connect(
         [this, box, expander, columns, ref_list_store, paths]()
         {
             std::vector<std::string> paths_to_clear;
-            // for (auto &[check, name] : check_buttons)
-            // {
-            //     if (check->get_active())
-            //     {
-            //         auto it = paths.find(name);
-            //         if (it != paths.end())
-            //             paths_to_clear.push_back(it->second);
-            //     }
-            // }
             auto children = ref_list_store->children();
             for (auto iter = children.begin(); iter != children.end(); ++iter)
             {
@@ -248,53 +244,16 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
                     paths_to_clear.push_back(path);
                 }
             }
-            bool is_safe = (expander->get_label() == SAFE_EXPANDER_TITLE);
-            if (is_safe)
+            bool deletion_confirmed = confirm_deletion(paths_to_clear, expander->get_label() == SAFE_EXPANDER_TITLE);
+            if (deletion_confirmed)
             {
-                if (paths_to_clear.size() <= 0)
-                    return;
-                Gtk::MessageDialog dialog("Are you sure you want to clear this cache?", false, Gtk::MESSAGE_QUESTION,
-                                          Gtk::BUTTONS_YES_NO, false);
-
-                if (dialog.run() == Gtk::RESPONSE_YES)
-                {
-                    auto result = core::CacheCleaner::sort_cache(paths_to_clear);
-                    if (!result.paths.empty() || !result.commands.empty())
-                        ui::MessageDialogHelper::spawn_result_dialog(result);
-                }
-            }
-            else
-            {
-                if (paths_to_clear.size() <= 0)
-                    return;
-                Gtk::MessageDialog dialog1("Are you sure you want to clear this cache?\nThis may break some programs",
-                                           false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
-
-                if (dialog1.run() != Gtk::RESPONSE_YES)
-                    return;
-
-                Gtk::MessageDialog dialog2("Totally sure?\nThis can break your system", false, Gtk::MESSAGE_WARNING,
-                                           Gtk::BUTTONS_YES_NO, false);
-
-                if (dialog2.run() == Gtk::RESPONSE_YES)
-                {
-                    auto result = core::CacheCleaner::sort_cache(paths_to_clear);
-                    if (!result.paths.empty() || !result.commands.empty())
-                        ui::MessageDialogHelper::spawn_result_dialog(result);
-                }
+                auto result = core::CacheCleaner::sort_cache(paths_to_clear);
+                if (!result.paths.empty() || !result.commands.empty())
+                    ui::MessageDialogHelper::spawn_result_dialog(result);
             }
 
-            // for (Gtk::Widget *widget : box->get_children())
-            // {
-            //     if (auto *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
-            //     {
-            //         if (check_button->get_active())
-            //             check_button->set_active(false);
-            //     }
-            //     else
-            //         continue;
-            // }
-            for (auto iter = children.begin(); iter != children.end(); ++iter)
+            for (auto iter = children.begin(); iter != children.end();
+                 ++iter) // sets false to all toggles that were on after cleaning
             {
                 auto row = *iter;
                 if (row[columns->column_selected])
@@ -305,25 +264,54 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     choose_everything->signal_toggled().connect(
         [box, choose_everything, columns, ref_list_store]()
         {
-            // for (Gtk::Widget *widget : box->get_children())
-            // {
-            //     if (auto *check_button = dynamic_cast<Gtk::CheckButton *>(widget))
-            //     {
-            //         check_button->set_active(choose_everything->get_active());
-            //     }
-            //     else
-            //         continue;
-            // }
             auto children = ref_list_store->children();
             for (auto iter = children.begin(); iter != children.end(); ++iter)
             {
                 auto row = *iter;
-                if (row[columns->column_selected])
-                {
-                    row[columns->column_selected] = choose_everything->get_active();
-                }
+                row[columns->column_selected] = choose_everything->get_active();
             }
         });
 
     return expander;
+}
+bool ui::MainWindow::confirm_deletion(std::vector<std::string> paths_to_clear, bool is_safe)
+{
+    if (is_safe) // one confirmation for safe category before deleting
+    {
+        if (paths_to_clear.size() <= 0)
+            return false;
+
+        return create_single_confirmation();
+    }
+    else // double confirmation for other categories before deleting
+    {
+        if (paths_to_clear.size() <= 0)
+            return false;
+
+        bool dialog_response = create_double_confirmation();
+        if (!dialog_response)
+            return false;
+
+        return dialog_response;
+    }
+}
+bool ui::MainWindow::create_single_confirmation()
+{
+    Gtk::MessageDialog dialog("Are you sure you want to clear this cache?", false, Gtk::MESSAGE_QUESTION,
+                              Gtk::BUTTONS_YES_NO, false);
+
+    return dialog.run() == Gtk::RESPONSE_YES;
+}
+bool ui::MainWindow::create_double_confirmation()
+{
+    Gtk::MessageDialog dialog1("Are you sure you want to clear this cache?\nThis may break some programs", false,
+                               Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
+
+    if (dialog1.run() != Gtk::RESPONSE_YES)
+        return false;
+
+    Gtk::MessageDialog dialog2("Totally sure?\nThis can break your system", false, Gtk::MESSAGE_WARNING,
+                               Gtk::BUTTONS_YES_NO, false);
+
+    return dialog2.run() == Gtk::RESPONSE_YES;
 }

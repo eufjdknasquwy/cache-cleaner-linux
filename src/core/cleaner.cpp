@@ -10,7 +10,7 @@
 #include <string>
 namespace fs = std::filesystem;
 core::Config const &core::CacheCleaner::s_config = core::ConfigLoader::get_config();
-core::CacheCleaner::ClearReport core::CacheCleaner::s_del_result;
+core::ClearReport core::CacheCleaner::s_del_result;
 std::string core::CacheCleaner::expand_tilde(const std::string &path)
 {
     if (!path.empty() && path[0] == '~')
@@ -118,8 +118,8 @@ std::string core::CacheCleaner::format_size(std::uintmax_t bytes)
 /** Sorts out cache in std::vector and then calls the clear_cache function
  * @ param dirty_paths_to_clear: std::vector with unparsed cache paths
  */
-core::CacheCleaner::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear,
-                                                               const ClearOptions &options)
+core::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> &dirty_paths_to_clear,
+                                                 const ClearOptions &options)
 {
     std::vector<std::string> filtered_paths;
     const std::string home_path_str = get_home_dir().string();
@@ -272,7 +272,7 @@ void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry, const Cl
         auto file = Gio::File::create_for_path(path);
         file->trash();
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
-        s_del_result.paths.insert(path);
+        s_del_result.paths.push_back(path);
     }
     catch (const Glib::Error &e)
     {
@@ -301,7 +301,7 @@ void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOption
         auto file = Gio::File::create_for_path(path);
         file->trash();
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
-        s_del_result.paths.insert(path);
+        s_del_result.paths.push_back(path);
     }
     catch (const Glib::Error &e)
     {
@@ -314,5 +314,33 @@ void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOption
         {
             utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed deleting " + path + ": " + e.what()));
         }
+    }
+}
+void core::CacheCleaner::clear_trash_bin()
+{
+    std::string trash_path = Glib::get_user_data_dir() + "/Trash";
+    try
+    {
+        for (const auto &entry : fs::directory_iterator(trash_path + "/files"))
+        {
+            fs::remove_all(entry.path());
+        }
+        for (const auto &entry : fs::directory_iterator(trash_path + "/info"))
+        {
+            fs::remove_all(entry.path());
+        }
+    }
+    catch (fs::filesystem_error &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Error cleaning user trash bin");
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  ("Code: " + std::to_string(e.code().value()) + " (" + e.code().message() + ")"));
+    }
+    catch (std::exception &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  "Unexpected error occured while trying to clear user trash bin: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
     }
 }
