@@ -34,19 +34,21 @@ namespace ui
             static constexpr std::uintmax_t UNKNOWN_SIZE = UINT32_MAX;
 
             static constexpr const char *SAFE_EXPANDER_TITLE = "Safe to clear cache";
-            static constexpr const char *SAFE_EXPANDER_DESC = "this cache is safe to clear";
+            static constexpr const char *SAFE_EXPANDER_DESC = "This cache is safe to clear";
 
-            static constexpr const char *WARNING_EXPANDER_TITLE = "This cache requires caution (Warning!)";
-            static constexpr const char *WARNING_EXPANDER_DESC = "delete with your own risk";
+            static constexpr const char *WARNING_EXPANDER_TITLE = "Unsafe cache";
+            static constexpr const char *WARNING_EXPANDER_DESC =
+                "This cache requires caution, delete with your own risk (Warning!)";
 
             static constexpr const char *UNKNOWN_EXPANDER_TITLE = "Unknown cache (Warning!)";
-            static constexpr const char *UNKNOWN_EXPANDER_DESC = "delete with your own risk";
+            static constexpr const char *UNKNOWN_EXPANDER_DESC = "Unknown cache, delete with your own risk (Warning!)";
 
-            static constexpr const char *SYSTEM_EXPANDER_TITLE = "System cache (root, Warning!)";
-            static constexpr const char *SYSTEM_EXPANDER_DESC = "this cache needs root rights";
+            static constexpr const char *SYSTEM_EXPANDER_TITLE = "System cache";
+            static constexpr const char *SYSTEM_EXPANDER_DESC =
+                "This cache contains package managers and more (Warning!)";
 
-            static constexpr const char *USER_EXPANDER_TITLE = "User added cache";
-            static constexpr const char *USER_EXPANDER_DESC = "your own added cache";
+            static constexpr const char *USER_EXPANDER_TITLE = "User cache";
+            static constexpr const char *USER_EXPANDER_DESC = "Your own added cache";
 
             const core::Config &m_config;
             std::unique_ptr<Gtk::Window> m_window;
@@ -89,6 +91,7 @@ namespace ui
             struct CacheRow
             {
                     std::string name;
+                    std::string desc;
                     std::string path;
                     std::uintmax_t bytes;
                     std::string size_str;
@@ -102,11 +105,13 @@ namespace ui
                     {
                         add(column_selected);
                         add(column_name);
+                        add(column_desc);
                         add(column_path);
                         add(column_size);
                     }
                     Gtk::TreeModelColumn<bool> column_selected;
                     Gtk::TreeModelColumn<std::string> column_name;
+                    Gtk::TreeModelColumn<std::string> column_desc;
                     Gtk::TreeModelColumn<std::string> column_path;
                     Gtk::TreeModelColumn<std::string> column_size;
             };

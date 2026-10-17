@@ -33,10 +33,11 @@ Supports GUI and CLI modes.
 ## Features
 
 ### GUI
-- Categories by danger level: Safe, Warning, Unknown, System, User
+- Categories by danger level
 - Checkboxes for individual paths, "Choose everything" per category
-- Confirmation dialogs for dangerous categories (double confirm for Warning/Unknown)
+- Confirmation dialogs for dangerous categories (double confirm for Warning and others)
 - User files are moved to trash
+- Clear trash button
 
 ### CLI
 - `--list` — list all caches
@@ -46,13 +47,12 @@ Supports GUI and CLI modes.
 
 ### Cache support
 - AUR helpers: `yay`, `paru`
-- Programming languages: `pip`, `go`, `nuget`, `npm`
-- System package managers: `pacman`, `apt`, `dnf`, `flatpak`, `snap`
-- System cache: `journalctl`
+- Programming languages such as `pip`, `go`, `nuget`, `npm`
+- System package managers such as `pacman`, `apt`, `dnf`, `flatpak`, `snap`
+- System cache and logs: `journalctl`
 
-### Config
-- `categories.json` — built-in
-- `~/.config/cache-cleaner/user_categories.json` — user path
+### Configuration
+- `~/.config/cache-cleaner/user_categories.json`
 
 ## How it works
 
@@ -102,11 +102,9 @@ Example:
 {
   "categories": [
     {
-      "category": "User",
-      "danger_level": "User",
       "entries": [
-        { "name": "my-app", "path": "~/.cache/my-app", "type": "path" },
-        { "name": "some-app", "path": "~/some-app", "type": "command", "command": "some-app --clean-cache" }
+        { "name": "my-app", "desc": "cache of my app", "path": "~/.cache/my-app", "type": "path" },
+        { "name": "some-app", "path": "~/some-app", "type": "command", "command": "some-app --clean-cache", "root": false }
       ]
     }
   ]
@@ -117,11 +115,12 @@ Example:
 
 - Linux only
 - Root caches require polkit agent
+- Can't currently launch user's own scripts for cleaning cache
 
 ## Known issues (problems)
 
 - No fallback to `sudo` if `pkexec` is unavailable
-- No support for many package managers
+- No user feedback in GUI (no error messages in GUI)
 
 ## Roadmap
 
@@ -152,6 +151,7 @@ Example:
 - [ ] Ability to cancel deletion
 - [ ] DE integration (notifications, tray)
 - [ ] Cache searching in categories
+- [ ] Libadwaita UI
 
 ## License
 

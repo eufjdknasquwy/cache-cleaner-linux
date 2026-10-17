@@ -176,6 +176,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     treeview->get_column(toggle_column - 1)->add_attribute(toggle->property_active(), columns->column_selected);
 
     treeview->append_column("Name", columns->column_name);
+    treeview->append_column("Description", columns->column_desc);
     treeview->append_column("Path", columns->column_path);
     treeview->append_column("Size", columns->column_size);
 
@@ -199,7 +200,17 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
         std::uintmax_t bytes = core::CacheCleaner::size(path);
         std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
 
-        cache_rows.push_back({name, path, bytes, size_str, false});
+        std::string cache_desc;
+
+        for (const auto &cache_entry : m_config.entries)
+        {
+            if (name == cache_entry.name)
+            {
+                cache_desc = cache_entry.desc;
+            }
+        }
+
+        cache_rows.push_back({name, cache_desc, path, bytes, size_str, false});
     }
     std::sort(cache_rows.begin(), cache_rows.end(),
               [](const CacheRow &a, const CacheRow &b)
@@ -212,13 +223,14 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
 
                   return a.bytes > b.bytes;
               });
-    for (const auto &r : cache_rows) // adds cache rows
+    for (const auto &cache_row : cache_rows) // adds cache rows
     {
-        auto row = *(ref_list_store->append());
-        row[columns->column_selected] = r.selected;
-        row[columns->column_name] = r.name;
-        row[columns->column_path] = r.path;
-        row[columns->column_size] = r.size_str;
+        const auto row = *(ref_list_store->append());
+        row[columns->column_selected] = cache_row.selected;
+        row[columns->column_name] = cache_row.name;
+        row[columns->column_desc] = cache_row.desc;
+        row[columns->column_path] = cache_row.name == cache_row.path ? "" : cache_row.path;
+        row[columns->column_size] = cache_row.size_str;
     }
 
     box->add(*bottom_box);

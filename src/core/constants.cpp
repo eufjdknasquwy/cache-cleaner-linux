@@ -22,4 +22,8 @@ namespace core
     {
         return get_home_dir() / ".config" / "cache-cleaner" / "user_categories.json";
     }
+    std::filesystem::path get_package_managers_dir()
+    {
+        return project_root() / "src" / "config" / "package_managers.json";
+    }
 } // namespace core

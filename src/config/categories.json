@@ -1,15 +1,3 @@
-// DO NOT TOUCH THIS FILE
-// THIS FILE IS USED FOR SCANNING CACHE DIRECTORIES
-//
-// IF YOU WANT TO ADD YOUR OWN CACHE DIRECTORY, YOU SHOULD
-// ADD IT TO user_directories.json IN ~/.config/cache-cleaner
-//
-// IF YOU REALLY WANT TO EDIT THIS FILE, YOU SHOULD
-// READ THE DOCUMENTATION
-//
-// IF YOU DAMAGE THE FILE,
-// YOU CAN REDOWNLOAD IT FROM GITHUB REPOSITORY,
-// AND PUT IT RIGHT WHERE YOU FOUND THIS
 {
   "categories":
   [
@@ -22,11 +10,17 @@
         { "name": "paru", "path": "~/.cache/paru", "type": "path" },
 
         { "name": "pip", "path": "~/.cache/pip", "type": "command", "command": "pip cache purge" },
-        { "name": "go", "path": "~/.cache/go-build", "type": "command", "command": "go clean -cache -fuzzcache" },
+        { "name": "pipx", "path": "~/.cache/pipx", "type": "command", "command": "pipx cache purge" },
+        { "name": "go", "path": "~/.cache/go-build", "type": "command", "command": "go clean -cache -fuzzcache -modcache" },
         { "name": "nuget", "path": "~/.nuget/packages", "type": "command", "command": "dotnet nuget locals all --clear" },
         { "name": "npm", "path": "~/.npm/_cacache", "type": "command", "command": "npm cache clean --force" },
+        { "name": "cargo", "desc": "Requires cargo-cache package\n(cargo install cargo-cache)", "path": "~/.cargo/registry/cache", "type": "command", "command": "cargo cache -a" },
+        { "name": "yarn", "path": "~/.cache/yarn", "type": "command", "command": "yarn cache clean" },
+        { "name": "maven", "path": "~/.m2/repository", "type": "command", "command": "mvn dependency:purge-local-repository" },
 
-        { "name": "tldr", "path": "~/.cache/tldr", "type": "path" }
+        { "name": "gradle", "path": "~/.gradle/caches", "type": "path"},
+
+        { "name": "Thumbnails", "path": "~/.cache/thumbnails", "type": "path" }
       ]
     },
     {
@@ -34,15 +28,62 @@
       "danger_level" : "Warning",
       "entries" :
       [
-        { "name": "trizen", "path": "~/.cache/trizen", "type": "path" },
-        { "name": "pikaur", "path": "~/.cache/pikaur", "type": "path" },
-        { "name": "gstreamer", "path": "~/.cache/gstreamer-1.0", "type": "path" },
-        { "name": "thumbnails", "path": "~/.cache/thumbnails", "type": "path" },
-        { "name": "font config", "path": "~/.cache/fontconfig", "type": "path" },
-        { "name": "mpv", "path": "~/.cache/mpv", "type": "path" },
-        { "name": "vlc", "path": "~/.cache/vlc", "type": "path" },
-        { "name": "nvidia", "path": "~/.cache/nvidia", "type": "path" },
-        { "name": "mesa shader cache", "path": "~/.cache/mesa_shader_cache", "type": "path" }
+        { "name": "Trizen", "path": "~/.cache/trizen", "type": "path" },
+        { "name": "Pikaur", "path": "~/.cache/pikaur", "type": "path" },
+        { "name": "Gstreamer", "path": "~/.cache/gstreamer-1.0", "type": "path" },
+        { "name": "Font config", "path": "~/.cache/fontconfig", "type": "command", "command": "fc-cache -f" },
+        { "name": "Icon cache", "path": "~/.cache/icon-cache.kcache", "type": "path" },
+
+        { "name": "GTK3", "path": "~/.cache/gtk-3.0", "type": "path" },
+        { "name": "GTK4", "path": "~/.cache/gtk-4.0", "type": "path" },
+        { "name": "QT", "path": "~/.cache/qtshadercache", "type": "path" },
+
+        { "name": "PulseAudio", "path": "~/.config/pulse", "type": "path" },
+        { "name": "PipeWire", "path": "~/.cache/pipewire", "type": "path" },
+
+        { "name": "Man", "path": "~/.cache/man", "type": "command", "command": "mandb -c" },
+        { "name": "Recently used", "path": "~/.local/share/recently-used.xbel", "type": "path" },
+
+        { "name": "Mpv", "path": "~/.cache/mpv", "type": "path" },
+        { "name": "VLC", "path": "~/.cache/vlc", "type": "path" },
+        { "name": "Spotify", "path": "~/.cache/spotify", "type": "path" },
+        { "name": "Rhythmbox", "path": "~/.cache/rhythmbox", "type": "path" },
+        { "name": "GIMP", "path": "~/.cache/GIMP", "type": "path" },
+        { "name": "Krita", "path": "~/.cache/krita", "type": "path" },
+        { "name": "Inkscape", "path": "~/.cache/inkscape", "type": "path" },
+
+        { "name": "LibreOffice", "path": "~/.cache/libreoffice", "type": "path" },
+        { "name": "Thunderbird", "path": "~/.cache/thunderbird", "type": "path" },
+        { "name": "OnlyOffice", "path": "~/.cache/onlyoffice", "type": "path" },
+
+        { "name": "Steam", "path": "~/.steam/steam/steamapps/shadercache", "type": "path" },
+        { "name": "Lutris", "path": "~/.cache/lutris", "type": "path" },
+        { "name": "Bottles", "path": "~/.var/app/com.usebottles.bottles/cache", "type": "path" },
+        { "name": "Heroic", "path": "~/.cache/heroic", "type": "path" },
+
+        { "name": "Visual Studio Code", "path": "~/.config/Code/Cache", "type": "path" },
+        { "name": "JetBrains IDEs", "path": "~/.cache/JetBrains", "type": "path" },
+        { "name": "Sublime Text", "path": "~/.cache/sublime-text", "type": "path" },
+        { "name": "Neovim", "path": "~/.cache/nvim", "type": "path" },
+        { "name": "Vim", "path": "~/.cache/vim", "type": "path" },
+        { "name": "Docker (Rootless)", "desc": "Doesn't need root", "type": "command", "command": "docker system prune -af", "root": false },
+        { "name": "Podman (Rootless)", "desc": "Doesn't need root", "type": "command", "command": "podman system prune -af", "root": false },
+        { "name": "Kubernetes", "path": "~/.kube/cache", "type": "path" },
+
+        { "name": "GNOME Terminal", "path": "~/.cache/gnome-terminal", "type": "path" },
+        { "name": "Konsole", "path": "~/.cache/konsole", "type": "path" },
+        { "name": "Alacritty", "path": "~/.cache/alacritty", "type": "path" },
+        { "name": "Kitty", "path": "~/.cache/kitty", "type": "path" },
+        { "name": "WezTerm", "path": "~/.cache/wezterm", "type": "path" },
+
+        { "name": "GNOME", "path": "~/.cache/gnome-software", "type": "path" },
+        { "name": "KDE", "path": "~/.cache/kpackage", "type": "path" },
+        { "name": "XFCE", "path": "~/.cache/xfce4", "type": "path" },
+        { "name": "Cinnamon", "path": "~/.cache/cinnamon", "type": "path" },
+        { "name": "MATE", "path": "~/.cache/mate", "type": "path" },
+
+        { "name": "Nvidia", "desc": "Nvidia drivers cache", "path": "~/.cache/nvidia", "type": "path" },
+        { "name": "Mesa shader cache", "desc": "Shader cache", "path": "~/.cache/mesa_shader_cache", "type": "path" }
       ]
     },
     {
@@ -57,14 +98,29 @@
       "danger_level" : "System",
       "entries" :
       [
-        { "name": "pacman", "path": "pacman", "type": "command", "command": "pacman -Scc --noconfirm" },
-        { "name": "apt", "path": "apt", "type": "command", "command": "sh -c 'apt clean && apt autoclean'" },
-        { "name": "dnf", "path": "dnf", "type": "command", "command": "dnf clean all" },
+        { "name": "pacman", "type": "command", "command": "pacman -Scc --noconfirm", "root": true },
+        { "name": "dnf", "type": "command", "command": "dnf clean all", "root": true },
+        { "name": "apt", "type": "command", "command": "sh -c 'apt clean && apt autoclean'", "root": true },
 
-        { "name": "flatpak", "path": "flatpak", "type": "command", "command": "flatpak uninstall --unused" },
-        { "name": "snap", "path": "snap", "type": "command", "command": "rm -rf /var/lib/snapd/cache/*" },
+        { "name": "zypper", "type": "command", "command": "zypper clean --all", "root": true },
+        { "name": "apk", "type": "command", "command": "apk cache clean", "root": true },
+        { "name": "xbps", "type": "command", "command": "xbps-remove -O", "root": true },
+        { "name": "portage", "type": "command", "command": "sh -c 'eclean-dist -d && sudo eclean-pkg -d'", "root": true },
+        { "name": "nix", "type": "command", "command": "nix-collect-garbage -d", "root": true },
 
-        { "name": "journalctl", "path": "journalctl", "type": "command", "command": "journalctl --vacuum-time=2weeks" }
+        { "name": "pkg", "type": "command", "command": "pkg clean -a", "root": true },
+        { "name": "pkgin", "type": "command", "command": "pkgin clean", "root": true },
+        { "name": "pkg_add", "type": "command", "command": "pkg_delete -a", "root": true },
+
+        { "name": "brew", "type": "command", "command": "brew cleanup -s", "root": true },
+
+        { "name": "flatpak", "type": "command", "command": "flatpak uninstall --unused", "root": false },
+        { "name": "snap", "type": "command", "command": "rm -rf /var/lib/snapd/cache/*", "root": true },
+
+        { "name": "journalctl", "type": "command", "command": "journalctl --vacuum-time=2weeks", "root": true },
+
+        { "name": "Docker (Rootful)", "path": "docker", "desc": "Needs root", "type": "command", "command": "docker system prune -af", "root": true },
+        { "name": "Podman (Rootful)", "path": "podman", "desc": "Needs root", "type": "command", "command": "podman system prune -af", "root": true }
       ]
     }
   ]

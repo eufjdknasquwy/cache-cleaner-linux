@@ -2,6 +2,7 @@
 #include "utils/console_logger.h"
 #include <fstream>
 #include <string>
+using json = nlohmann::json;
 utils::PackageManagers utils::SystemDetector::s_package_managers;
 void utils::SystemDetector::list_detections()
 {
@@ -11,7 +12,7 @@ void utils::SystemDetector::list_detections()
         utils::ConsoleLogger::log(core::LogLevel::Info, ("Detected root cache: " + pm));
     }
 }
-void utils::SystemDetector::detect_distribution()
+void utils::SystemDetector::detect_distribution(const json &json_config)
 {
     std::ifstream f("/etc/os-release");
     std::string line;
@@ -25,31 +26,37 @@ void utils::SystemDetector::detect_distribution()
                 id = id.substr(1, id.size() - 2);
         }
     }
-    detect_package_managers(id);
+    detect_package_managers(id, json_config);
 }
-void utils::SystemDetector::detect_package_managers(const std::string &distro_id)
+void utils::SystemDetector::detect_package_managers(const std::string &distro_id, const json &json_config)
 {
     // system package managers
-    detect_pm_by_distro_id(distro_id);
+    detect_pm_by_distro_id(distro_id, json_config);
 
     // other package managers
     detect_pm_by_command("which flatpak", "flatpak");
     detect_pm_by_command("which snap", "snap");
     detect_pm_by_command("which journalctl", "journalctl");
+    detect_pm_by_command("which docker", "docker");
+    detect_pm_by_command("which podman", "podman");
 }
-void utils::SystemDetector::detect_pm_by_distro_id(const std::string &distro_id)
+void utils::SystemDetector::detect_pm_by_distro_id(const std::string &distro_id, const json &json_config)
 {
-    if (distro_id == "arch")
-        s_package_managers.names.insert("pacman");
+    if (json_config.is_null())
+        return;
 
-    if (distro_id == "debian")
-        s_package_managers.names.insert("apt");
-
-    if (distro_id == "ubuntu")
-        s_package_managers.names.insert("apt");
-
-    if (distro_id == "fedora")
-        s_package_managers.names.insert("dnf");
+    const auto package_managers = json_config["package_managers"];
+    for (const auto &[pm_name, distros] : package_managers.items())
+    {
+        for (const auto &distro : distros)
+        {
+            if (distro.is_string() && distro.get<std::string>() == distro_id)
+            {
+                s_package_managers.names.insert(pm_name);
+                break;
+            }
+        }
+    }
 }
 void utils::SystemDetector::detect_pm_by_command(const std::string &command, const std::string &pm_name)
 {

@@ -1,9 +1,6 @@
 #pragma once
-#include "core/cleaner.h"
+#include "core/structs.h"
 #include <gtkmm.h>
-#include <gtkmm/box.h>
-#include <gtkmm/dialog.h>
-#include <gtkmm/listbox.h>
 namespace ui
 {
     class MessageDialogHelper

@@ -23,38 +23,57 @@ std::string core::CacheCleaner::expand_tilde(const std::string &path)
 }
 bool core::CacheCleaner::exists(const std::string &path_str)
 {
-    std::map<std::string, DangerLevel> paths;
-    for (const auto &cache : core::ConfigLoader::get_config().entries)
-    {
-        paths[cache.path] = cache.danger;
-    }
-    auto it = paths.find(path_str);
-    if (it == paths.end())
+    // std::map<std::string, DangerLevel> paths;
+    // for (const auto &cache : core::ConfigLoader::get_config().entries)
+    // {
+    //     paths[cache.path] = cache.danger;
+    // }
+    // auto it = paths.find(path_str);
+    // if (it == paths.end())
+    //     return false;
+    // const DangerLevel path_danger = it->second;
+    // if (path_danger != core::DangerLevel::System)
+    // {
+    //     if (!path_str.empty() && path_str[0] == '~')
+    //     {
+    //         std::string path_str2 = path_str;
+    //         path_str2.replace(0, 1, get_home_dir().string());
+    //         fs::path path = fs::path(path_str2).lexically_normal();
+    //         return fs::exists(path);
+    //     }
+    //     return fs::exists(fs::path(path_str).lexically_normal());
+    // }
+    // else
+    // {
+    //     auto package_managers = utils::SystemDetector::get_pms();
+    //     if (package_managers.names.size() > 0)
+    //     {
+    //         if (package_managers.names.contains(path_str))
+    //             return true;
+    //         else
+    //             return false;
+    //     }
+    //     return false;
+    // }
+    const auto &entries = core::ConfigLoader::get_config().entries;
+    auto it = std::find_if(entries.begin(), entries.end(), [&](const auto &e) { return e.path == path_str; });
+    if (it == entries.end())
         return false;
-    const DangerLevel path_danger = it->second;
-    if (path_danger != core::DangerLevel::System)
+
+    if (it->danger == core::DangerLevel::System)
     {
-        if (!path_str.empty() && path_str[0] == '~')
-        {
-            std::string path_str2 = path_str;
-            path_str2.replace(0, 1, get_home_dir().string());
-            fs::path path = fs::path(path_str2).lexically_normal();
-            return fs::exists(path);
-        }
-        return fs::exists(fs::path(path_str).lexically_normal());
+        auto pms = utils::SystemDetector::get_pms();
+        return pms.names.contains(path_str);
     }
-    else
-    {
-        auto package_managers = utils::SystemDetector::get_pms();
-        if (package_managers.names.size() > 0)
-        {
-            if (package_managers.names.contains(path_str))
-                return true;
-            else
-                return false;
-        }
-        return false;
-    }
+
+    if (path_str.empty())
+        return true;
+
+    std::string resolved = path_str;
+    if (resolved[0] == '~')
+        resolved.replace(0, 1, get_home_dir().string());
+
+    return fs::exists(fs::path(resolved).lexically_normal());
 }
 uintmax_t core::CacheCleaner::size(const std::string &path_str)
 {
@@ -159,10 +178,10 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
 
     for (const auto &entry : s_config.entries)
     {
-        if (entry.danger == DangerLevel::System)
+        if (entry.root)
             root_paths.insert(entry.name);
 
-        if (entry.type == "command" && entry.command != "")
+        if (entry.type == "command" || entry.command != "")
             command_paths[entry.name] = entry.command;
     }
     static const std::set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};

@@ -44,6 +44,12 @@ void utils::ConsoleLogger::export_report_to_json(core::ClearReport &clear_report
     std::ofstream report_file;
     report_file.open(report_path);
 
+    if (!report_file.is_open())
+    {
+        log(core::LogLevel::Error, "Failed to open clear report file");
+        return;
+    }
+
     log(core::LogLevel::Info, "Exporting clear report to JSON...");
     core::ConfigLoader::export_report_to_json(report_file, clear_report);
     log(core::LogLevel::Info, "Exporting complete");

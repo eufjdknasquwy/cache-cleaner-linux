@@ -5,6 +5,7 @@ int main(int argc, char *argv[])
 {
     utils::ArgsParser::parse(argc, argv);
     core::ConfigLoader::load_config();
+    core::ConfigLoader::load_pm_config();
 
     utils::ConsoleLogger::init();
     utils::SystemDetector::list_detections();

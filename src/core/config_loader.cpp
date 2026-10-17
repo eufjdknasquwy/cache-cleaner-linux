@@ -3,6 +3,7 @@
 #include "core/cleaner.h"
 #include "core/enums.h"
 #include "utils/console_logger.h"
+#include "utils/system_detector.h"
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
@@ -26,10 +27,11 @@ std::map<std::string, std::string> core::ConfigLoader::get_paths_by_danger(core:
     }
     return names_and_paths;
 }
-int core::ConfigLoader::load_json_file(std::ifstream &config_file, json &json_config, const std::string &path)
+int core::ConfigLoader::load_json_file(json &json_config, const std::string &path)
 {
     try
     {
+        std::ifstream config_file;
         config_file.open(path);
         if (!config_file.is_open())
             throw std::runtime_error("Failed openning config");
@@ -59,11 +61,54 @@ int core::ConfigLoader::load_json_file(std::ifstream &config_file, json &json_co
     }
     return 0;
 }
+void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &entry, core::DangerLevel danger)
+{
+    try
+    {
+        std::string name = entry.value("name", "");
+        cache.name = name.empty() ? entry.value("path", "") : name;
+
+        cache.desc = entry.value("desc", "");
+
+        std::string path = entry.value("path", "");
+        cache.path = path.empty() ? name : path;
+
+        if (entry.contains("type"))
+            cache.type = entry.value("type", "path");
+
+        if (cache.type == "command" || entry.contains("command"))
+            cache.command = entry.value("command", "");
+
+        cache.danger = danger;
+
+        cache.root = entry.value("root", false);
+    }
+    catch (json::type_error &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  "JSON type error occured while trying to create clear report: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        return;
+    }
+    catch (const json::exception &e)
+    {
+        utils::ConsoleLogger::log(LogLevel::Error, "JSON error occured while trying to create clear report: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        return;
+    }
+    catch (const std::exception &e)
+    {
+        utils::ConsoleLogger::log(
+            LogLevel::Error, std::string("Unexpected error occured while trying to create clear report: ") + e.what());
+        return;
+    }
+}
 void core::ConfigLoader::load_config()
 {
-    std::ifstream config_file;
     json json_config;
-    if (load_json_file(config_file, json_config, get_categories_dir().string()) != 0)
+    if (load_json_file(json_config, get_categories_dir().string()) != 0)
         return;
 
     s_config.entries.clear();
@@ -75,31 +120,11 @@ void core::ConfigLoader::load_config()
         const auto entries = category["entries"];
         for (const auto &entry : entries)
         {
-            const std::string danger_str = category["danger_level"].get<std::string>();
+            const std::string danger_str = category.value("danger_level", "Unknown");
             const DangerLevel danger = parse_danger_level(danger_str);
 
             CacheEntry cache;
-
-            std::string name = entry["name"].get<std::string>();
-            if (name != "")
-                cache.name = name;
-            else
-                cache.name = entry["path"].get<std::string>();
-
-            std::string path = entry["path"].get<std::string>();
-            if (path != "")
-                cache.path = path;
-            else
-                cache.path = cache.name;
-
-            if (entry.contains("type"))
-                cache.type = entry["type"].get<std::string>();
-
-            if (cache.type == "command" && entry.contains("command"))
-                cache.command = entry["command"].get<std::string>();
-
-            cache.danger = danger;
-
+            fill_cache_entry(cache, entry, danger);
             s_config.entries.push_back(cache);
         }
     }
@@ -109,9 +134,8 @@ void core::ConfigLoader::load_user_config()
 {
     ensure_user_config_exists(); // makes sure user config exists
 
-    std::ifstream config_file;
     json json_config;
-    if (load_json_file(config_file, json_config, get_user_categories_dir().string()) != 0)
+    if (load_json_file(json_config, get_user_categories_dir().string()) != 0)
         return;
 
     const auto categories = json_config["categories"];
@@ -123,30 +147,18 @@ void core::ConfigLoader::load_user_config()
         for (const auto &entry : entries)
         {
             CacheEntry cache;
-
-            std::string name = entry["name"].get<std::string>();
-            if (name != "")
-                cache.name = name;
-            else
-                cache.name = entry["path"].get<std::string>();
-
-            std::string path = entry["path"].get<std::string>();
-            if (path != "")
-                cache.path = path;
-            else
-                cache.path = cache.name;
-
-            if (entry.contains("type"))
-                cache.type = entry["type"].get<std::string>();
-
-            if (cache.type == "command" && entry.contains("command"))
-                cache.command = entry["command"].get<std::string>();
-
-            cache.danger = DangerLevel::User;
-
+            fill_cache_entry(cache, entry, DangerLevel::User);
             s_config.entries.push_back(cache);
         }
     }
+}
+void core::ConfigLoader::load_pm_config()
+{
+    json json_config;
+    if (load_json_file(json_config, get_package_managers_dir().string()) != 0)
+        return;
+
+    utils::SystemDetector::detect_distribution(json_config);
 }
 /** Makes sure user config exists
  */
@@ -199,16 +211,53 @@ core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string &d)
 }
 void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core::ClearReport &clear_report)
 {
-    json j;
-
-    for (int i = 0; i < clear_report.paths.size(); ++i)
+    try
     {
-        j["paths"][std::string("path" + std::to_string(i + 1))] = clear_report.paths[i];
-    }
-    for (const auto &[command, code] : clear_report.commands)
-    {
-        j["commands"][command] = code;
-    }
+        json j;
 
-    report_file << j.dump(4);
+        for (int i = 0; i < clear_report.paths.size(); ++i)
+        {
+            j["paths"][std::string("path" + std::to_string(i + 1))] = clear_report.paths[i];
+        }
+        for (const auto &[command, code] : clear_report.commands)
+        {
+            j["commands"][command] = code;
+        }
+        try
+        {
+            report_file << j.dump(4);
+            if (report_file.fail())
+            {
+                utils::ConsoleLogger::log(LogLevel::Error, "Failed writing to clear report file");
+            }
+        }
+        catch (const json::type_error &e)
+        {
+            utils::ConsoleLogger::log(LogLevel::Error, "JSON dump error occured while trying to create clear report: ");
+            utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+            return;
+        }
+    }
+    catch (json::type_error &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  "JSON type error occured while trying to create clear report: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        return;
+    }
+    catch (const json::exception &e)
+    {
+        utils::ConsoleLogger::log(LogLevel::Error, "JSON error occured while trying to create clear report: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        return;
+    }
+    catch (const std::exception &e)
+    {
+        utils::ConsoleLogger::log(
+            LogLevel::Error, std::string("Unexpected error occured while trying to create clear report: ") + e.what());
+        return;
+    }
 }
