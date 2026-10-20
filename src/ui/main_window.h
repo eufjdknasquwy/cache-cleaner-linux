@@ -20,10 +20,10 @@ namespace ui
             }
 
         private:
-            static constexpr int MIN_WIN_WIDTH = 400;
+            static constexpr int MIN_WIN_WIDTH = 550;
             static constexpr int MIN_WIN_HEIGHT = 500;
 
-            static constexpr int DEFAULT_WIN_WIDTH = 650;
+            static constexpr int DEFAULT_WIN_WIDTH = 750;
             static constexpr int DEFAULT_WIN_HEIGHT = 800;
 
             static constexpr int DEFAULT_MARGIN = 10;
@@ -33,7 +33,7 @@ namespace ui
 
             static constexpr std::uintmax_t UNKNOWN_SIZE = UINT32_MAX;
 
-            static constexpr const char *SAFE_EXPANDER_TITLE = "Safe to clear cache";
+            static constexpr const char *SAFE_EXPANDER_TITLE = "Safe cache";
             static constexpr const char *SAFE_EXPANDER_DESC = "This cache is safe to clear";
 
             static constexpr const char *WARNING_EXPANDER_TITLE = "Unsafe cache";
@@ -90,12 +90,14 @@ namespace ui
 
             struct CacheRow
             {
+                    bool selected = false;
                     std::string name;
                     std::string desc;
                     std::string path;
+                    std::string command;
+                    bool root;
                     std::uintmax_t bytes;
                     std::string size_str;
-                    bool selected = false;
             };
 
             class ModelColumns : public Gtk::TreeModelColumnRecord
@@ -107,12 +109,16 @@ namespace ui
                         add(column_name);
                         add(column_desc);
                         add(column_path);
+                        add(column_command);
+                        add(column_root);
                         add(column_size);
                     }
                     Gtk::TreeModelColumn<bool> column_selected;
                     Gtk::TreeModelColumn<std::string> column_name;
                     Gtk::TreeModelColumn<std::string> column_desc;
                     Gtk::TreeModelColumn<std::string> column_path;
+                    Gtk::TreeModelColumn<std::string> column_command;
+                    Gtk::TreeModelColumn<bool> column_root;
                     Gtk::TreeModelColumn<std::string> column_size;
             };
     };

@@ -83,7 +83,7 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
 
         cache.root = entry.value("root", false);
     }
-    catch (json::type_error &e)
+    catch (const json::type_error &e)
     {
         utils::ConsoleLogger::log(core::LogLevel::Error,
                                   "JSON type error occured while trying to create clear report: ");
@@ -239,7 +239,7 @@ void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core:
             return;
         }
     }
-    catch (json::type_error &e)
+    catch (const json::type_error &e)
     {
         utils::ConsoleLogger::log(core::LogLevel::Error,
                                   "JSON type error occured while trying to create clear report: ");

@@ -31,7 +31,7 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::ClearReport &clear_repor
         for (const auto &[command, status_code] : clear_report.commands)
         {
             auto *row = Gtk::manage(new Gtk::ListBoxRow());
-            auto *path_label = Gtk::manage(new Gtk::Label(command + "( status " + std::to_string(status_code) + " )"));
+            auto *path_label = Gtk::manage(new Gtk::Label(command + " (status " + std::to_string(status_code) + ")"));
             path_label->set_halign(Gtk::ALIGN_START);
             row->add(*path_label);
             listbox->add(*row);

@@ -6,8 +6,12 @@
 #include "utils/system_detector.h"
 #include <cstdint>
 #include <filesystem>
+#include <future>
 #include <giomm/file.h>
+#include <glibmm/spawn.h>
 #include <string>
+#include <thread>
+#include <unordered_set>
 namespace fs = std::filesystem;
 core::Config const &core::CacheCleaner::s_config = core::ConfigLoader::get_config();
 core::ClearReport core::CacheCleaner::s_del_result;
@@ -23,38 +27,6 @@ std::string core::CacheCleaner::expand_tilde(const std::string &path)
 }
 bool core::CacheCleaner::exists(const std::string &path_str)
 {
-    // std::map<std::string, DangerLevel> paths;
-    // for (const auto &cache : core::ConfigLoader::get_config().entries)
-    // {
-    //     paths[cache.path] = cache.danger;
-    // }
-    // auto it = paths.find(path_str);
-    // if (it == paths.end())
-    //     return false;
-    // const DangerLevel path_danger = it->second;
-    // if (path_danger != core::DangerLevel::System)
-    // {
-    //     if (!path_str.empty() && path_str[0] == '~')
-    //     {
-    //         std::string path_str2 = path_str;
-    //         path_str2.replace(0, 1, get_home_dir().string());
-    //         fs::path path = fs::path(path_str2).lexically_normal();
-    //         return fs::exists(path);
-    //     }
-    //     return fs::exists(fs::path(path_str).lexically_normal());
-    // }
-    // else
-    // {
-    //     auto package_managers = utils::SystemDetector::get_pms();
-    //     if (package_managers.names.size() > 0)
-    //     {
-    //         if (package_managers.names.contains(path_str))
-    //             return true;
-    //         else
-    //             return false;
-    //     }
-    //     return false;
-    // }
     const auto &entries = core::ConfigLoader::get_config().entries;
     auto it = std::find_if(entries.begin(), entries.end(), [&](const auto &e) { return e.path == path_str; });
     if (it == entries.end())
@@ -144,16 +116,20 @@ core::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> 
     const std::string home_path_str = get_home_dir().string();
     for (const std::string &path : dirty_paths_to_clear)
     {
-        if (!path.empty() && path[0] == '~') // проверка на home директорию
+        if (!path.empty())
         {
-            std::string clean_path = path;
-            clean_path.replace(0, 1, home_path_str);
-            filtered_paths.push_back(clean_path);
+            filtered_paths.push_back(expand_tilde(path));
         }
-        else
-        {
-            filtered_paths.push_back(path);
-        }
+        // if (!path.empty() && path[0] == '~')
+        // {
+        //     std::string clean_path = path;
+        //     clean_path.replace(0, 1, home_path_str);
+        //     filtered_paths.push_back(clean_path);
+        // }
+        // else
+        // {
+        //     filtered_paths.push_back(path);
+        // }
     }
     clear_cache(filtered_paths, options);
     return s_del_result;
@@ -173,18 +149,23 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
     fs::path yay_dir = (home_path / ".cache/yay").lexically_normal();
     fs::path paru_dir = (home_path / ".cache/paru").lexically_normal();
 
-    std::set<std::string> root_paths;
+    std::unordered_set<std::string> root_paths;
     std::map<std::string, std::string> command_paths;
 
     for (const auto &entry : s_config.entries)
     {
         if (entry.root)
-            root_paths.insert(entry.name);
-
+        {
+            // root_paths.insert(entry.path);
+            root_paths.insert(expand_tilde(entry.path));
+        }
         if (entry.type == "command" || entry.command != "")
-            command_paths[entry.name] = entry.command;
+        {
+            // command_paths[entry.path] = entry.command;
+            command_paths[expand_tilde(entry.path)] = entry.command;
+        }
     }
-    static const std::set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};
+    static const std::unordered_set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};
     for (const std::string &path_str : paths_to_clear)
     {
         fs::path path = fs::path(path_str).lexically_normal();
@@ -207,7 +188,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
             for (const auto &entry : fs::directory_iterator(yay_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
-                    del_to_trash(entry, options);
+                    delete_paths(entry, options);
             }
         }
         else if (path == paru_dir)
@@ -220,7 +201,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
             for (const auto &entry : fs::directory_iterator(paru_dir))
             {
                 if (!AUR_EXCEPTIONS.contains(entry.path().filename().string()))
-                    del_to_trash(entry, options);
+                    delete_paths(entry, options);
             }
         }
         else
@@ -244,11 +225,11 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
                 utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleting " + path.string()));
             if (fs::is_directory(path))
             {
-                del_to_trash(path, options);
+                delete_paths(path, options);
             }
             else
             {
-                del_to_trash(fs::directory_entry(path), options);
+                delete_paths(fs::directory_entry(path), options);
             }
         }
     }
@@ -261,55 +242,72 @@ void core::CacheCleaner::run_command(const std::string &command, const ClearOpti
         return;
     }
     utils::ConsoleLogger::log(core::LogLevel::Info, ("Running: " + command));
-    int ret = 0;
-    std::string out, err;
+
+    struct CommandResult
+    {
+            int exit_code = 1;
+            std::string stdout_str = "";
+            std::string stderr_str = "";
+    };
+    CommandResult result;
+
     try
     {
-        Glib::spawn_command_line_sync(command, &out, &err, &ret);
-        if (ret == 0)
+        std::future<void> run_command_async = std::async(
+            std::launch::async, [command, &result]() -> void
+            { Glib::spawn_command_line_sync(command, &result.stdout_str, &result.stderr_str, &result.exit_code); });
+
+        run_command_async.get();
+
+        if (result.exit_code == 0)
             utils::ConsoleLogger::log(core::LogLevel::Info, ("Command succeeded: " + command));
         else
-            utils::ConsoleLogger::log(core::LogLevel::Error,
-                                      ("Command failed (status " + std::to_string(ret) + "): " + err));
+            utils::ConsoleLogger::log(
+                core::LogLevel::Error,
+                ("Command failed (status " + std::to_string(result.exit_code) + "): " + result.stderr_str));
     }
     catch (const Glib::Error &e)
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Code: " + std::to_string(e.code())));
+        result.exit_code = e.code();
     }
-    s_del_result.commands[command] = ret;
-}
-void core::CacheCleaner::del_to_trash(const fs::directory_entry &entry, const ClearOptions &options)
-{
-    auto path = entry.path().string();
-    if (options.dry_run)
+    catch (const std::exception &e)
     {
-        utils::ConsoleLogger::printmsg(("[dry-run] Would delete: " + path));
-        return;
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
     }
+    s_del_result.commands[command] = result.exit_code;
+}
+void core::CacheCleaner::delete_paths(const fs::directory_entry &entry, const ClearOptions &options)
+{
     try
     {
-        auto file = Gio::File::create_for_path(path);
-        file->trash();
-        utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleted " + path));
-        s_del_result.paths.push_back(path);
+        std::string path = entry.path().string();
+        std::thread thread(del_to_trash, path, options);
+        thread.join();
     }
-    catch (const Glib::Error &e)
+    catch (const std::exception &e)
     {
-        if (e.code() == Gio::Error::PERMISSION_DENIED)
-        {
-            utils::ConsoleLogger::log(core::LogLevel::Warning, ("Permission denied, skipping " + entry.path().string() +
-                                                                ", try running with sudo"));
-        }
-        else
-        {
-            utils::ConsoleLogger::log(core::LogLevel::Error,
-                                      ("Failed deleting " + entry.path().string() + ": " + e.what()));
-        }
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to delete file: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
     }
 }
-void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOptions &options)
+void core::CacheCleaner::delete_paths(const fs::path &fs_path, const ClearOptions &options)
 {
-    auto path = fs_path.string();
+    try
+    {
+        std::string path = fs_path.string();
+        std::thread thread(del_to_trash, path, options);
+        thread.join();
+    }
+    catch (const std::exception &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to delete file: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
+    }
+}
+void core::CacheCleaner::del_to_trash(const std::string &path, const core::ClearOptions &options)
+{
     if (options.dry_run)
     {
         utils::ConsoleLogger::printmsg(("[dry-run] Would delete: " + path));
@@ -331,35 +329,37 @@ void core::CacheCleaner::del_to_trash(const fs::path &fs_path, const ClearOption
         }
         else
         {
-            utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed deleting " + path + ": " + e.what()));
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to delete " + path + ": " + e.what()));
         }
     }
 }
 void core::CacheCleaner::clear_trash_bin()
 {
-    std::string trash_path = Glib::get_user_data_dir() + "/Trash";
-    try
-    {
-        for (const auto &entry : fs::directory_iterator(trash_path + "/files"))
+    std::thread(
+        []
         {
-            fs::remove_all(entry.path());
-        }
-        for (const auto &entry : fs::directory_iterator(trash_path + "/info"))
-        {
-            fs::remove_all(entry.path());
-        }
-    }
-    catch (fs::filesystem_error &e)
-    {
-        utils::ConsoleLogger::log(core::LogLevel::Error, "Error cleaning user trash bin");
-        utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
-        utils::ConsoleLogger::log(core::LogLevel::Error,
-                                  ("Code: " + std::to_string(e.code().value()) + " (" + e.code().message() + ")"));
-    }
-    catch (std::exception &e)
-    {
-        utils::ConsoleLogger::log(core::LogLevel::Error,
-                                  "Unexpected error occured while trying to clear user trash bin: ");
-        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
-    }
+            std::string trash_path = Glib::get_user_data_dir() + "/Trash";
+            try
+            {
+                for (const auto &entry : fs::directory_iterator(trash_path + "/files"))
+                    fs::remove_all(entry.path());
+
+                for (const auto &entry : fs::directory_iterator(trash_path + "/info"))
+                    fs::remove_all(entry.path());
+            }
+            catch (const fs::filesystem_error &e)
+            {
+                utils::ConsoleLogger::log(core::LogLevel::Error, "Error cleaning user trash bin: ");
+                utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
+                utils::ConsoleLogger::log(core::LogLevel::Error, "Code: " + std::to_string(e.code().value()) + " (" +
+                                                                     e.code().message() + ")");
+            }
+            catch (const std::exception &e)
+            {
+                utils::ConsoleLogger::log(core::LogLevel::Error,
+                                          "Unexpected error occured while trying to clear user trash bin: ");
+                utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+            }
+        })
+        .detach();
 }

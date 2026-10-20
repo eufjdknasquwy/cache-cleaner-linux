@@ -59,10 +59,22 @@ void utils::ConsoleLogger::export_report_to_json(core::ClearReport &clear_report
 void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &msg)
 {
     std::string full_msg = "[" + timestamp("") + "] " + "[" + level_to_str(level) + "] " + msg;
-    if (level != core::LogLevel::Error)
+
+    switch (level)
+    {
+    case core::LogLevel::Info:
+        std::cout << GREEN << full_msg << std::endl;
+        break;
+    case core::LogLevel::Warning:
+        std::cout << YELLOW << full_msg << std::endl;
+        break;
+    case core::LogLevel::Error:
+        std::cout << RED << full_msg << std::endl;
+        break;
+    default:
         std::cout << full_msg << std::endl;
-    else
-        std::cerr << full_msg << std::endl;
+        break;
+    }
 
     if (s_log.is_open())
     {

@@ -8,13 +8,13 @@ namespace core
 {
     struct CacheEntry
     {
-            std::string name;
-            std::string desc;
-            std::string path;
-            std::string type;
-            std::string command;
-            DangerLevel danger;
-            bool root;
+            std::string name = "";
+            std::string desc = "";
+            std::string path = "";
+            std::string type = "";
+            std::string command = "";
+            DangerLevel danger = DangerLevel::Unknown;
+            bool root = false;
     };
     struct Config
     {

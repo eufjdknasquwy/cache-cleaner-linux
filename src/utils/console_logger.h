@@ -18,6 +18,9 @@ namespace utils
 
         private:
             static constexpr const char *DEFAULT_TIMESTAMP_FORMAT = "%Y-%m-%d %H:%M:%S";
+            static constexpr const char *GREEN = "\033[32m";
+            static constexpr const char *YELLOW = "\033[33m";
+            static constexpr const char *RED = "\033[91m";
 
             static std::string s_home_path;
 

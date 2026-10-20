@@ -1,8 +1,12 @@
 #include "main_window.h"
 #include "core/cleaner.h"
 #include "core/config_loader.h"
+#include "core/enums.h"
 #include "message_dialog_helper.h"
 #include "ui_helper.h"
+#include "utils/console_logger.h"
+#include <cstdint>
+#include <future>
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 {
@@ -178,6 +182,8 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     treeview->append_column("Name", columns->column_name);
     treeview->append_column("Description", columns->column_desc);
     treeview->append_column("Path", columns->column_path);
+    treeview->append_column("Command", columns->column_command);
+    treeview->append_column("Root", columns->column_root);
     treeview->append_column("Size", columns->column_size);
 
     box->add(*treeview);
@@ -192,25 +198,47 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     listbox_row->add(*box);
 
     std::vector<CacheRow> cache_rows;
+    std::unordered_map<std::string, std::future<std::uintmax_t>> futures;
     for (const auto &[name, path] : paths)
     {
         if (!core::CacheCleaner::exists(path))
             continue;
 
-        std::uintmax_t bytes = core::CacheCleaner::size(path);
+        futures[path] = (std::async(std::launch::async, core::CacheCleaner::size, path));
+    }
+    for (const auto &[name, path] : paths)
+    {
+        auto it = futures.find(path);
+        if (it == futures.end())
+            continue;
+
+        std::uintmax_t bytes = UNKNOWN_SIZE;
+        try
+        {
+            bytes = it->second.get();
+        }
+        catch (const std::exception &e)
+        {
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to get size of cache " + name + " : "));
+            utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
+        }
+
         std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
 
-        std::string cache_desc;
+        std::string cache_desc, command;
+        bool root;
 
         for (const auto &cache_entry : m_config.entries)
         {
             if (name == cache_entry.name)
             {
                 cache_desc = cache_entry.desc;
+                command = cache_entry.command;
+                root = cache_entry.root;
             }
         }
 
-        cache_rows.push_back({name, cache_desc, path, bytes, size_str, false});
+        cache_rows.push_back({false, name, cache_desc, path, command, root, bytes, size_str});
     }
     std::sort(cache_rows.begin(), cache_rows.end(),
               [](const CacheRow &a, const CacheRow &b)
@@ -230,6 +258,8 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
         row[columns->column_name] = cache_row.name;
         row[columns->column_desc] = cache_row.desc;
         row[columns->column_path] = cache_row.name == cache_row.path ? "" : cache_row.path;
+        row[columns->column_command] = cache_row.command;
+        row[columns->column_root] = cache_row.root;
         row[columns->column_size] = cache_row.size_str;
     }
 

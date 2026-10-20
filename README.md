@@ -1,5 +1,9 @@
 # Cache cleaner
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+![Release](https://img.shields.io/github/v/release/eufjdknasquwy/cache-cleaner-linux)
+![C++](https://img.shields.io/badge/C%2B%2B-20-blue)
+
 A utility for Linux to free disk space by cleaning caches of
 package managers and user-added directories
 
@@ -10,7 +14,7 @@ package managers and user-added directories
 - [Features](#features)
 - [How it works](#how-it-works)
 - [Dependencies](#dependencies)
-- [Building from source](#building-from-source)
+- Installation
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Limitations](#limitations)
@@ -21,7 +25,7 @@ package managers and user-added directories
 
 ## Status
 
-**Alpha (v0.3.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
+**Alpha (v0.4.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
 and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journald`.
 Supports GUI and CLI modes.
 
@@ -70,8 +74,9 @@ Supports GUI and CLI modes.
 - nlohmann-json
 - gtkmm-3.0 (is needed for GUI compilation)
 
-## Building from source
+## Installation
 
+### Building from source
 ```bash
 git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
@@ -117,19 +122,21 @@ Example:
 - Root caches require polkit agent
 - Can't currently launch user's own scripts for cleaning cache
 
-## Known issues (problems)
+## Known issues
 
 - No fallback to `sudo` if `pkexec` is unavailable
 - No user feedback in GUI (no error messages in GUI)
+- No progress bar for long operations
+- No way to cancel deletion
 
 ## Roadmap
 
 ### Done
-- [x] Cleaning package manager caches like `pip`, `yay` and more
-- [x] Cleaning System caches like `pacman` or `apt` and more
+- [x] Cleaning package manager caches such as `pip`, `yay` and more
+- [x] Cleaning System caches and system package managers such as `pacman`, `apt` and more
 - [x] Systemd logs (`journalctl`)
 - [x] Confirmation dialogs before deleting
-- [x] Root-cleaning via `pkexec`
+- [x] Root cache cleaning via `pkexec`
 - [x] Basic CLI mode (`--list`, `--delete-x`, `--dry-run`, `--yes`)
 - [x] Report after cleaning
 - [x] Cache size showcase
@@ -139,18 +146,17 @@ Example:
 - [x] Cache sorts out by descending
 - [x] `Clear trash` button
 - [x] Export clear report to JSON
+- [x] Colorful logging in terminal
 
 ### Planned
-- [ ] GTK4 instead of GTK3
-- [ ] Error messages in GUI
-- [ ] Cleaning logs for not only systemd
+- [ ] Port from GTK3 to GTK4
+- [ ] User feedback in GUI (errors, messages)
 - [ ] Scan size button
-- [ ] Async operations for performance
 - [ ] Custom CSS and animations
 - [ ] Progress bar when deleting
 - [ ] Ability to cancel deletion
 - [ ] DE integration (notifications, tray)
-- [ ] Cache searching in categories
+- [ ] Search cache in categories
 - [ ] Libadwaita UI
 
 ## License
