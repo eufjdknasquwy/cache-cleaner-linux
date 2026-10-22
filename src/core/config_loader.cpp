@@ -70,8 +70,7 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
 
         cache.desc = entry.value("desc", "");
 
-        std::string path = entry.value("path", "");
-        cache.path = path.empty() ? name : path;
+        cache.path = entry.value("path", name);
 
         if (entry.contains("type"))
             cache.type = entry.value("type", "path");

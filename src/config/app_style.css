@@ -1,0 +1,159 @@
+@define-color bg_dark      #1e1e1e;
+@define-color bg_light     #252526;
+@define-color bg_panel     #2d2d30;
+@define-color text_main    #d4d4d4;
+@define-color text_dim     #888888;
+@define-color accent       #007acc;
+@define-color accent_hover #005a9e;
+@define-color border_color #3e3e42;
+
+window {
+  background-color: @bg_dark;
+  color: @text_main;
+  font-family: "Inter", "Cantarell", sans-serif;
+  font-size: 13.5px;
+}
+
+label {
+  color: @text_main;
+}
+
+label.dim {
+  color: @text_dim;
+  font-size: 0.9em;
+}
+
+label.title {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: white;
+}
+
+button {
+  background-color: @bg_panel;
+  color: white;
+  border: 2px solid @border_color;
+  border-radius: 12px;
+  padding: 8px 16px;
+  transition: all 350ms ease;
+  outline: none;
+}
+
+button:hover {
+  background-color: @border_color;
+  border-color: @accent;
+}
+
+button:active {
+  background-color: @accent_hover;
+  color: white;
+  border-color: @accent;
+}
+
+button:disabled {
+  opacity: 0.5;
+  background-color: @bg_light;
+}
+
+expander {
+  background-color: @bg_light;
+  border: 1px solid @border_color;
+  border-radius: 20px;
+  margin: 6px 0;
+  padding: 2px;
+}
+
+expander title {
+  color: white;
+  font-weight: bold;
+  padding: 10px;
+  transition: color 200ms ease;
+}
+
+expander:hover {
+  border-color: @accent;
+}
+
+treeview {
+  background-color: @bg_dark;
+  color: @text_main;
+  border: none;
+  transition: background-color 200ms ease;
+}
+
+treeview:selected {
+  background-color: alpha(@accent, 0.15);
+  color: white;
+  border: none;
+  transition: background-color 250ms ease;
+}
+
+treeview header button {
+  background-color: @bg_light;
+  color: @text_dim;
+  border: none;
+  border-bottom: 1px solid @border_color;
+  border-radius: 0;
+  padding: 6px;
+  font-weight: bold;
+}
+
+treeview header button:hover {
+  background-color: @bg_panel;
+  color: white;
+}
+
+scrollbar {
+  background-color: @bg_dark;
+  border: none;
+}
+
+scrollbar slider {
+  background-color: @border_color;
+  border-radius: 6px;
+  min-width: 8px;
+  min-height: 8px;
+}
+
+scrollbar slider:hover {
+  background-color: @text_dim;
+}
+
+checkbutton {
+  color: @text_main;
+  outline: none;
+}
+
+checkbutton check {
+  background-color: @bg_panel;
+  background-image: none;
+  border: 1px solid @border_color;
+  border-radius: 4px;
+  box-shadow: none;
+  outline: none;
+  min-width: 16px;
+  min-height: 16px;
+  padding: 0;
+  transition: all 350ms ease;
+}
+
+checkbutton:hover check {
+  border-color: @accent;
+  background-color: @border_color;
+}
+
+checkbutton check:checked {
+  background-color: @accent;
+  border-color: @accent;
+  color: white;
+  background-image: none;
+}
+
+dialog {
+  background-color: @bg_light;
+  color: @text_main;
+}
+
+dialog .dialog-action-area button {
+  margin: 4px;
+}

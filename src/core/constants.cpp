@@ -12,6 +12,10 @@ namespace core
         return std::filesystem::path(PROJECT_ROOT_DIR);
 #else
         return std::filesystem::current_path();
+        if (cwd.filename() == "build")
+        {
+            return cwd.parent_path();
+        }
 #endif
     }
     std::filesystem::path get_categories_dir()
@@ -25,5 +29,9 @@ namespace core
     std::filesystem::path get_package_managers_dir()
     {
         return project_root() / "src" / "config" / "package_managers.json";
+    }
+    std::filesystem::path get_css_style_path()
+    {
+        return project_root() / "src" / "config" / "app_style.css";
     }
 } // namespace core

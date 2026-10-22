@@ -29,6 +29,7 @@ bool core::CacheCleaner::exists(const std::string &path_str)
 {
     const auto &entries = core::ConfigLoader::get_config().entries;
     auto it = std::find_if(entries.begin(), entries.end(), [&](const auto &e) { return e.path == path_str; });
+
     if (it == entries.end())
         return false;
 
@@ -120,16 +121,6 @@ core::ClearReport core::CacheCleaner::sort_cache(const std::vector<std::string> 
         {
             filtered_paths.push_back(expand_tilde(path));
         }
-        // if (!path.empty() && path[0] == '~')
-        // {
-        //     std::string clean_path = path;
-        //     clean_path.replace(0, 1, home_path_str);
-        //     filtered_paths.push_back(clean_path);
-        // }
-        // else
-        // {
-        //     filtered_paths.push_back(path);
-        // }
     }
     clear_cache(filtered_paths, options);
     return s_del_result;
@@ -154,22 +145,21 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
 
     for (const auto &entry : s_config.entries)
     {
+        std::string parsed_path = expand_tilde(entry.path);
         if (entry.root)
         {
-            // root_paths.insert(entry.path);
-            root_paths.insert(expand_tilde(entry.path));
+            root_paths.insert(parsed_path);
         }
         if (entry.type == "command" || entry.command != "")
         {
-            // command_paths[entry.path] = entry.command;
-            command_paths[expand_tilde(entry.path)] = entry.command;
+            command_paths[parsed_path] = entry.command;
         }
     }
     static const std::unordered_set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};
     for (const std::string &path_str : paths_to_clear)
     {
         fs::path path = fs::path(path_str).lexically_normal();
-        if (!root_paths.contains(path) && !fs::exists(path))
+        if (!command_paths.contains(path) && !root_paths.contains(path) && !fs::exists(path))
         {
             if (!options.dry_run)
             {

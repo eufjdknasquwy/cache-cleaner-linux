@@ -1,5 +1,4 @@
 #pragma once
-#include "core/cleaner.h"
 #include "core/config_loader.h"
 #include "utils/args_parser.h"
 #include <gtkmm.h>
@@ -30,6 +29,11 @@ namespace ui
             static constexpr int DEFAULT_SPACING = 5;
             static constexpr int DEFAULT_PADDING = 0;
             static constexpr int DEFAULT_INDENT = 40;
+            static constexpr int DEFAULT_ICON_SIZE = 24;
+
+            static constexpr const char *DEFAULT_CLOSE_BUTTON_ICON = "window-close";
+            static constexpr const char *DEFAULT_SCAN_CACHE_BUTTON_ICON = "view-refresh";
+            static constexpr const char *DEFAULT_CLEAR_TRASH_BUTTON_ICON = "user-trash";
 
             static constexpr std::uintmax_t UNKNOWN_SIZE = UINT32_MAX;
 
@@ -52,6 +56,7 @@ namespace ui
 
             const core::Config &m_config;
             std::unique_ptr<Gtk::Window> m_window;
+            Glib::Dispatcher m_dispatcher;
             Gtk::Box *m_window_box = nullptr;
 
             Gtk::Box *m_top_box = nullptr;
@@ -68,25 +73,22 @@ namespace ui
 
             Gtk::Button *m_close_button = nullptr;
             Gtk::Button *m_scan_cache_button = nullptr;
-            Gtk::Button *m_scan_size_button = nullptr;
             Gtk::Button *m_clear_trash_button = nullptr;
 
             void fill_content_box();
             void fill_bottom_box();
 
             void scan_cache();
+            void on_scan_cache_finished();
             void scan_size();
-            void clear_trash_bin()
-            {
-                core::CacheCleaner::clear_trash_bin();
-            }
+            void clear_trash_bin();
 
             Gtk::Expander *create_category(const std::string &title, const std::string &desc,
                                            const std::map<std::string, std::string> &paths);
 
             bool confirm_deletion(std::vector<std::string> paths_to_clear, bool is_safe);
-            bool create_single_confirmation();
-            bool create_double_confirmation();
+            bool create_single_confirmation(const char *message);
+            bool create_double_confirmation(const char *message1, const char *message2);
 
             struct CacheRow
             {

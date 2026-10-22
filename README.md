@@ -1,8 +1,9 @@
 # Cache cleaner
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
-![Release](https://img.shields.io/github/v/release/eufjdknasquwy/cache-cleaner-linux)
+[![GitHub release](https://img.shields.io/github/v/release/eufjdknasquwy/cache-cleaner-linux)](https://github.com/eufjdknasquwy/cache-cleaner-linux/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue)
+![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
 
 A utility for Linux to free disk space by cleaning caches of
 package managers and user-added directories
@@ -14,7 +15,7 @@ package managers and user-added directories
 - [Features](#features)
 - [How it works](#how-it-works)
 - [Dependencies](#dependencies)
-- Installation
+- [Installation](#installation)
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Limitations](#limitations)
@@ -31,8 +32,8 @@ Supports GUI and CLI modes.
 
 ## Screenshots
 
-![Main window](docs/screenshots/screenshot1.png)
-![CLI](docs/screenshots/screenshot2.png)
+![Main window](docs/screenshots/Main_window.png)
+![CLI](docs/screenshots/CLI.png)
 
 ## Features
 
@@ -82,6 +83,7 @@ git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
 cmake -B build -S .
 cmake --build build
+sudo cmake --install build # for .desktop file in your system and terminal command
 ```
 
 ## Usage
@@ -126,7 +128,7 @@ Example:
 
 - No fallback to `sudo` if `pkexec` is unavailable
 - No user feedback in GUI (no error messages in GUI)
-- No progress bar for long operations
+- No progress bar for delete operations
 - No way to cancel deletion
 
 ## Roadmap
@@ -147,17 +149,16 @@ Example:
 - [x] `Clear trash` button
 - [x] Export clear report to JSON
 - [x] Colorful logging in terminal
+- [x] Custom CSS and animations
 
 ### Planned
 - [ ] Port from GTK3 to GTK4
 - [ ] User feedback in GUI (errors, messages)
-- [ ] Scan size button
-- [ ] Custom CSS and animations
 - [ ] Progress bar when deleting
 - [ ] Ability to cancel deletion
 - [ ] DE integration (notifications, tray)
 - [ ] Search cache in categories
-- [ ] Libadwaita UI
+- [ ] Ability to add scripts for cleaning cache in user config
 
 ## License
 

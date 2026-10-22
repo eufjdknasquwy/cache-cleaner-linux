@@ -66,8 +66,8 @@
         { "name": "Sublime Text", "path": "~/.cache/sublime-text", "type": "path" },
         { "name": "Neovim", "path": "~/.cache/nvim", "type": "path" },
         { "name": "Vim", "path": "~/.cache/vim", "type": "path" },
-        { "name": "Docker (Rootless)", "desc": "Doesn't need root", "type": "command", "command": "docker system prune -af", "root": false },
-        { "name": "Podman (Rootless)", "desc": "Doesn't need root", "type": "command", "command": "podman system prune -af", "root": false },
+        { "name": "docker", "desc": "Doesn't need root", "type": "command", "command": "docker system prune -af", "root": false },
+        { "name": "podman", "desc": "Doesn't need root", "type": "command", "command": "podman system prune -af", "root": false },
         { "name": "Kubernetes", "path": "~/.kube/cache", "type": "path" },
 
         { "name": "GNOME Terminal", "path": "~/.cache/gnome-terminal", "type": "path" },
@@ -105,7 +105,7 @@
         { "name": "zypper", "type": "command", "command": "zypper clean --all", "root": true },
         { "name": "apk", "type": "command", "command": "apk cache clean", "root": true },
         { "name": "xbps", "type": "command", "command": "xbps-remove -O", "root": true },
-        { "name": "portage", "type": "command", "command": "sh -c 'eclean-dist -d && sudo eclean-pkg -d'", "root": true },
+        { "name": "portage", "type": "command", "command": "sh -c 'eclean-dist -d && eclean-pkg -d'", "root": true },
         { "name": "nix", "type": "command", "command": "nix-collect-garbage -d", "root": true },
 
         { "name": "pkg", "type": "command", "command": "pkg clean -a", "root": true },
@@ -114,13 +114,13 @@
 
         { "name": "brew", "type": "command", "command": "brew cleanup -s", "root": true },
 
-        { "name": "flatpak", "type": "command", "command": "flatpak uninstall --unused", "root": false },
+        { "name": "flatpak", "desc": "Deletes unused packages", "type": "command", "command": "flatpak uninstall --unused", "root": false },
         { "name": "snap", "type": "command", "command": "rm -rf /var/lib/snapd/cache/*", "root": true },
 
         { "name": "journalctl", "type": "command", "command": "journalctl --vacuum-time=2weeks", "root": true },
 
-        { "name": "Docker (Rootful)", "path": "docker", "desc": "Needs root", "type": "command", "command": "docker system prune -af", "root": true },
-        { "name": "Podman (Rootful)", "path": "podman", "desc": "Needs root", "type": "command", "command": "podman system prune -af", "root": true }
+        { "name": "docker", "desc": "Needs root", "type": "command", "command": "docker system prune -af", "root": true },
+        { "name": "podman", "desc": "Needs root", "type": "command", "command": "podman system prune -af", "root": true }
       ]
     }
   ]

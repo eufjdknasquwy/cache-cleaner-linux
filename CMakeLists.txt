@@ -22,6 +22,7 @@ set(SOURCES
     src/core/constants.cpp
     src/core/cli_tools.cpp
 
+    src/ui/css.cpp
     src/ui/main_window.cpp
     src/ui/message_dialog_helper.cpp
     src/ui/ui_helper.cpp
@@ -52,6 +53,7 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
     PROJECT_NAME="${PROJECT_NAME}"
     PROJECT_VERSION="${PROJECT_VERSION}"
+    PROJECT_BUILD_TYPE="${CMAKE_BUILD_TYPE}"
 )
 
 install(TARGETS ${PROJECT_NAME}
