@@ -87,10 +87,10 @@ paru -S cache-cleaner
 1. Go to the [Releases](https://github.com/eufjdknasquwy/cache-cleaner-linux/releases) page.
 2. Download the latest `cache-cleaner-x86_64.AppImage` file.
 3. Open your terminal, go to the directory where you downloaded the file, and make it executable:
-    ```bash
-    chmod +x cache-cleaner-x86_64.AppImage
-    ./cache-cleaner-x86_64.AppImage
-    ```
+  ```bash
+  chmod +x cache-cleaner-x86_64.AppImage
+  ./cache-cleaner-x86_64.AppImage
+  ```
 
 ### Other distribution (building from source)
 ```bash
@@ -106,9 +106,11 @@ sudo cmake --install build # for .desktop file in your system, and a terminal co
 ### GUI
 1. Install the program (see above)
 2. Run:
-   ```bash
-   cache-cleaner
-   ```
+  ```bash
+  cache-cleaner
+  # or appimage version:
+  ./cache-cleaner-x86_64.AppImage
+  ```
 3. Select the caches you want to clean and confirm.
 
 ### CLI

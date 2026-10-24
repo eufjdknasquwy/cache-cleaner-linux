@@ -11,7 +11,7 @@ mkdir -p AppDir/usr/share/icons/hicolor/256x256/apps
 
 cp build/cache-cleaner AppDir/usr/bin/
 
-if [ -f "assets/icon.png" ]; then
+if [ -f "assets/cache-cleaner.svg" ]; then
     cp assets/cache-cleaner.svg AppDir/cache-cleaner.svg
     cp assets/cache-cleaner.svg AppDir/usr/share/icons/hicolor/256x256/apps/cache-cleaner.svg
 fi
