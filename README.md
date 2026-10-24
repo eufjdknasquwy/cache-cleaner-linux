@@ -56,7 +56,7 @@ Supports GUI and CLI modes.
 - System cache and logs: `docker, podman, journalctl`
 
 ### Configuration
-- `~/.config/cache-cleaner/user_categories.json`
+See - [Configuration](#configuration)
 
 ## How it works
 
@@ -84,10 +84,15 @@ paru -S cache-cleaner
 ```
 
 ### Other distributions (appimage)
-```bash
-```
+1. Go to the [Releases](https://github.com/eufjdknasquwy/cache-cleaner-linux/releases) page.
+2. Download the latest `cache-cleaner-x86_64.AppImage` file.
+3. Open your terminal, go to the directory where you downloaded the file, and make it executable:
+    ```bash
+    chmod +x cache-cleaner-x86_64.AppImage
+    ./cache-cleaner-x86_64.AppImage
+    ```
 
-### Other distribution (Building from source)
+### Other distribution (building from source)
 ```bash
 git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
@@ -99,7 +104,7 @@ sudo cmake --install build # for .desktop file in your system, and a terminal co
 ## Usage
 
 ### GUI
-1. Build the project (see above)
+1. Install the program (see above)
 2. Run:
    ```bash
    cache-cleaner
@@ -107,7 +112,7 @@ sudo cmake --install build # for .desktop file in your system, and a terminal co
 3. Select the caches you want to clean and confirm.
 
 ### CLI
-See --help of program to use CLI utils
+See `cache-cleaner --help` in terminal
 
 ## Configuration
 
