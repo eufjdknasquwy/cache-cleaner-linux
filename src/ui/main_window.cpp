@@ -121,6 +121,7 @@ void ui::MainWindow::fill_bottom_box()
                     {
                         utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to scan cache: ");
                         utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
+                        utils::ConsoleLogger::flush_errors_to_ui();
                     }
                     m_dispatcher.emit();
                 })
@@ -237,11 +238,11 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
         if (std::string(PROJECT_BUILD_TYPE) == "Debug")
             utils::ConsoleLogger::log(core::LogLevel::Info, ("name: " + name + ", path: " + path + " exists"));
 
-        futures[path] = (std::async(std::launch::async, core::CacheCleaner::size, path));
+        futures[name] = (std::async(std::launch::async, core::CacheCleaner::size, path));
     }
     for (const auto &[name, path] : paths)
     {
-        auto it = futures.find(path);
+        auto it = futures.find(name);
         if (it == futures.end())
             continue;
 
@@ -254,16 +255,18 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
         {
             utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to get size of cache " + name + " : "));
             utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
+            utils::ConsoleLogger::flush_errors_to_ui();
         }
 
         std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
 
-        std::string cache_desc, command;
+        std::string cache_desc;
+        std::string command;
         bool root;
 
         for (const auto &cache_entry : m_config.entries)
         {
-            if (name == cache_entry.name || path == cache_entry.path)
+            if (name == cache_entry.name && path == cache_entry.path)
             {
                 cache_desc = cache_entry.desc;
                 command = cache_entry.command;
@@ -376,18 +379,21 @@ bool ui::MainWindow::confirm_deletion(std::vector<std::string> paths_to_clear, b
 }
 bool ui::MainWindow::create_single_confirmation(const char *message)
 {
-    Gtk::MessageDialog dialog(message, false, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO, false);
+    Gtk::MessageDialog dialog(*m_window, message, DEFAULT_DIALOG_MARKUP, Gtk::MESSAGE_QUESTION, Gtk::BUTTONS_YES_NO,
+                              DEFAULT_DIALOG_MODAL);
 
     return dialog.run() == Gtk::RESPONSE_YES;
 }
 bool ui::MainWindow::create_double_confirmation(const char *message1, const char *message2)
 {
-    Gtk::MessageDialog dialog1(message1, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
+    Gtk::MessageDialog dialog1(*m_window, message1, DEFAULT_DIALOG_MARKUP, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO,
+                               DEFAULT_DIALOG_MODAL);
 
     if (dialog1.run() != Gtk::RESPONSE_YES)
         return false;
 
-    Gtk::MessageDialog dialog2(message2, false, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO, false);
+    Gtk::MessageDialog dialog2(*m_window, message2, DEFAULT_DIALOG_MARKUP, Gtk::MESSAGE_WARNING, Gtk::BUTTONS_YES_NO,
+                               DEFAULT_DIALOG_MODAL);
 
     return dialog2.run() == Gtk::RESPONSE_YES;
 }

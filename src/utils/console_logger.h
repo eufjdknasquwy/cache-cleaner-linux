@@ -14,6 +14,7 @@ namespace utils
             static void print_help_msg(const int indent, const char *arg, const char *desc);
 
             static void log(const core::LogLevel level, const std::string &message);
+            static void flush_errors_to_ui();
             static void export_report_to_json(core::ClearReport &clear_report);
 
         private:
@@ -23,7 +24,7 @@ namespace utils
             static constexpr const char *RED = "\033[91m";
 
             static std::string s_home_path;
-
+            static std::string s_error_buffer;
             static std::ofstream s_log;
 
             static std::string timestamp(std::string format);

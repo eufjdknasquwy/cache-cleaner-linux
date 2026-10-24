@@ -1,6 +1,7 @@
 #include "console_logger.h"
 #include "core/config_loader.h"
 #include "core/enums.h"
+#include "ui/message_dialog_helper.h"
 #include <ctime>
 #include <filesystem>
 #include <fstream>
@@ -8,8 +9,9 @@
 #include <iostream>
 #include <string>
 namespace fs = std::filesystem;
-std::ofstream utils::ConsoleLogger::s_log;
 std::string utils::ConsoleLogger::s_home_path = std::getenv("HOME") ? std::getenv("HOME") : "/tmp";
+std::string utils::ConsoleLogger::s_error_buffer;
+std::ofstream utils::ConsoleLogger::s_log;
 void utils::ConsoleLogger::init()
 {
     std::string log_path = s_home_path + "/.local/state/cache-cleaner/log-" + timestamp("%Y-%m-%d_%H:%M") + ".txt";
@@ -70,6 +72,7 @@ void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &ms
         break;
     case core::LogLevel::Error:
         std::cout << RED << full_msg << std::endl;
+        s_error_buffer += msg + "\n";
         break;
     default:
         std::cout << full_msg << std::endl;
@@ -81,6 +84,19 @@ void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &ms
         s_log << full_msg << "\n";
         s_log.flush();
     }
+}
+void utils::ConsoleLogger::flush_errors_to_ui()
+{
+    if (s_error_buffer.empty())
+        return;
+
+    {
+        std::lock_guard<std::mutex> lock(ui::MessageDialogHelper::s_error_mutex);
+        ui::MessageDialogHelper::s_pending_error = s_error_buffer;
+    }
+    ui::MessageDialogHelper::s_error_dispatcher.emit();
+
+    s_error_buffer.clear();
 }
 std::string utils::ConsoleLogger::timestamp(std::string format)
 {

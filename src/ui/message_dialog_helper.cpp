@@ -1,40 +1,81 @@
 #include "message_dialog_helper.h"
 #include "ui_helper.h"
 #include "utils/console_logger.h"
+#include <atomic>
+#include <cstddef>
 #include <gtkmm/dialog.h>
-void ui::MessageDialogHelper::spawn_error_dialog()
+#include <gtkmm/label.h>
+Glib::Dispatcher ui::MessageDialogHelper::s_error_dispatcher;
+std::string ui::MessageDialogHelper::s_pending_error;
+std::mutex ui::MessageDialogHelper::s_error_mutex;
+std::atomic<bool> ui::MessageDialogHelper::s_is_dialog_open{false};
+void ui::MessageDialogHelper::init_error_handler()
 {
-    // auto [dialog, box, listbox] = create_dialog("Cache cleaner: error", "Cache cleaner: caught an error");
-    //
-    // auto *label = Gtk::manage(new Gtk::Label(e.what()));
-    // label->set_halign(Gtk::ALIGN_START);
-    // box->pack_start(*label, false, false, 0);
+    s_error_dispatcher.connect(
+        []()
+        {
+            if (s_is_dialog_open.exchange(true))
+            {
+                return;
+            }
+            std::string msg;
+            {
+                std::lock_guard<std::mutex> lock(s_error_mutex);
+                msg = s_pending_error;
+                s_pending_error.clear();
+            }
+            spawn_error_dialog(msg);
+            s_is_dialog_open = false;
+        });
+}
+void ui::MessageDialogHelper::spawn_error_dialog(const std::string &message)
+{
+    auto [dialog, box] = create_dialog("Cache cleaner: error", "Cache cleaner: caught an error");
+
+    auto *message_label = Gtk::manage(new Gtk::Label(message));
+    message_label->set_halign(Gtk::ALIGN_START);
+    box->pack_start(*message_label, false, false, 0);
+
+    auto *submessage_label = Gtk::manage(new Gtk::Label());
+    submessage_label->set_halign(Gtk::ALIGN_START);
+    box->pack_start(*submessage_label, false, false, 0);
+
+    size_t pos = message.find("json");
+    if (pos != std::string::npos)
+    {
+        submessage_label->set_label(
+            "JSON error, watch out for trailing commas in the config, or incorrect JSON format.");
+    }
+
+    dialog->show_all();
+    dialog->run();
+    dialog->hide();
+
+    delete dialog;
 }
 void ui::MessageDialogHelper::spawn_result_dialog(core::ClearReport &clear_report)
 {
-    auto [dialog, box, listbox] =
-        create_dialog("Cache cleaner: deletion complete", "Cache has been successfully cleaned!");
+    auto [dialog, box] = create_dialog("Cache cleaner: deletion complete", "Cache has been successfully cleaned!");
 
     if (!clear_report.paths.empty())
     {
         for (const auto &path : clear_report.paths)
         {
-            auto *row = Gtk::manage(new Gtk::ListBoxRow());
             auto *path_label = Gtk::manage(new Gtk::Label(path));
             path_label->set_halign(Gtk::ALIGN_START);
-            row->add(*path_label);
-            listbox->add(*row);
+            path_label->set_selectable(false);
+            box->add(*path_label);
         }
     }
     if (!clear_report.commands.empty())
     {
         for (const auto &[command, status_code] : clear_report.commands)
         {
-            auto *row = Gtk::manage(new Gtk::ListBoxRow());
-            auto *path_label = Gtk::manage(new Gtk::Label(command + " (status " + std::to_string(status_code) + ")"));
-            path_label->set_halign(Gtk::ALIGN_START);
-            row->add(*path_label);
-            listbox->add(*row);
+            auto *command_label =
+                Gtk::manage(new Gtk::Label(command + " (status " + std::to_string(status_code) + ")"));
+            command_label->set_halign(Gtk::ALIGN_START);
+            command_label->set_selectable(false);
+            box->add(*command_label);
         }
     }
 
@@ -46,10 +87,10 @@ void ui::MessageDialogHelper::spawn_result_dialog(core::ClearReport &clear_repor
 
     utils::ConsoleLogger::export_report_to_json(clear_report);
 }
-std::tuple<Gtk::Dialog *, Gtk::Box *, Gtk::ListBox *> ui::MessageDialogHelper::create_dialog(
-    const std::string &dialog_title, const std::string &message)
+std::tuple<Gtk::Dialog *, Gtk::Box *> ui::MessageDialogHelper::create_dialog(const std::string &dialog_title,
+                                                                             const std::string &message)
 {
-    auto *dialog = new Gtk::Dialog(dialog_title, true);
+    auto *dialog = new Gtk::Dialog(dialog_title);
     dialog->add_button("OK", Gtk::RESPONSE_OK);
     dialog->set_resizable(false);
 
@@ -65,11 +106,7 @@ std::tuple<Gtk::Dialog *, Gtk::Box *, Gtk::ListBox *> ui::MessageDialogHelper::c
     scroll->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     scroll->set_propagate_natural_height(true);
 
-    auto *listbox = Gtk::manage(new Gtk::ListBox());
-    listbox->set_selection_mode(Gtk::SELECTION_NONE);
-
-    scroll->add(*listbox);
     box->pack_start(*scroll, true, true, 0);
 
-    return std::make_tuple(dialog, box, listbox);
+    return std::make_tuple(dialog, box);
 }

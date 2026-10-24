@@ -60,11 +60,22 @@ void utils::SystemDetector::detect_pm_by_distro_id(const std::string &distro_id,
 }
 void utils::SystemDetector::detect_pm_by_command(const std::string &command, const std::string &pm_name)
 {
-    int ret = 0;
-    std::string out, err;
-    Glib::spawn_command_line_sync(command, &out, &err, &ret);
-    if (ret == 0)
+    try
     {
-        s_package_managers.names.insert(pm_name);
+        int ret = 0;
+        std::string out, err;
+        Glib::spawn_command_line_sync(command, &out, &err, &ret);
+        if (ret == 0)
+        {
+            s_package_managers.names.insert(pm_name);
+        }
+    }
+    catch (const std::exception &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  ("Unexpected error occured while trying to determine existence of package manager '" +
+                                   pm_name + "' by command '" + command + "'"));
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Message: " + std::string(e.what())));
+        utils::ConsoleLogger::flush_errors_to_ui();
     }
 }

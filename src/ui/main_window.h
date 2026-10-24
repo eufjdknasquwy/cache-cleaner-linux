@@ -31,6 +31,9 @@ namespace ui
             static constexpr int DEFAULT_INDENT = 40;
             static constexpr int DEFAULT_ICON_SIZE = 24;
 
+            static constexpr bool DEFAULT_DIALOG_MODAL = false;
+            static constexpr bool DEFAULT_DIALOG_MARKUP = false;
+
             static constexpr const char *DEFAULT_CLOSE_BUTTON_ICON = "window-close";
             static constexpr const char *DEFAULT_SCAN_CACHE_BUTTON_ICON = "view-refresh";
             static constexpr const char *DEFAULT_CLEAR_TRASH_BUTTON_ICON = "user-trash";

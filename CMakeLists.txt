@@ -1,19 +1,18 @@
-cmake_minimum_required(VERSION 3.16) # минимальная нужная версия для cmake
+cmake_minimum_required(VERSION 3.16)
 project(cache-cleaner VERSION 0.4.0 LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 20) # версия c++
+set(CMAKE_CXX_STANDARD 20) # c++ version
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON) # compile_commands.json
 
 include(GNUInstallDirs)
 
-# импорт библиотек
+# libs import
 find_package(PkgConfig REQUIRED)
 find_package(nlohmann_json REQUIRED)
 pkg_check_modules(GTKMM REQUIRED IMPORTED_TARGET gtkmm-3.0)
 
-# исходники
 set(SOURCES
     src/main.cpp
 
@@ -32,10 +31,10 @@ set(SOURCES
     src/utils/system_detector.cpp
 )
 
-# компиляция всех файлов
+# compilation of all files
 add_executable(${PROJECT_NAME} ${SOURCES})
 
-# чтоб писать modules/... вместо src/modules/...
+# alias for modules/...
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 target_link_libraries(${PROJECT_NAME} PRIVATE
@@ -43,12 +42,11 @@ target_link_libraries(${PROJECT_NAME} PRIVATE
     nlohmann_json::nlohmann_json
 )
 
-# компиляция библиотек ОДИН РАЗ
 target_precompile_headers(${PROJECT_NAME} PRIVATE
     <gtkmm.h>
 )
 
-# определения
+# variables (macros)
 target_compile_definitions(${PROJECT_NAME} PRIVATE
     PROJECT_ROOT_DIR="${CMAKE_CURRENT_SOURCE_DIR}"
     PROJECT_NAME="${PROJECT_NAME}"

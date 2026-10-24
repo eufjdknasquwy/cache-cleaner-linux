@@ -1,5 +1,6 @@
 #include "core/config_loader.h"
 #include "ui/main_window.h"
+#include "ui/message_dialog_helper.h"
 #include "utils/console_logger.h"
 #include "utils/system_detector.h"
 #include <thread>
@@ -8,6 +9,7 @@ int main(int argc, char *argv[])
     utils::ArgsParser::parse(argc, argv);
 
     utils::ConsoleLogger::init();
+    ui::MessageDialogHelper::init_error_handler();
 
     std::thread load_config_thread(
         []

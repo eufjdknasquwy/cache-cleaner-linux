@@ -42,6 +42,7 @@ int core::ConfigLoader::load_json_file(json &json_config, const std::string &pat
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to open settings file: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
         return 1;
     }
     catch (const json::parse_error &e)
@@ -50,6 +51,7 @@ int core::ConfigLoader::load_json_file(json &json_config, const std::string &pat
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Parse error at byte " + std::to_string(e.byte)));
+        utils::ConsoleLogger::flush_errors_to_ui();
         return 1;
     }
     catch (const std::exception &e)
@@ -57,6 +59,7 @@ int core::ConfigLoader::load_json_file(json &json_config, const std::string &pat
         utils::ConsoleLogger::log(core::LogLevel::Error,
                                   "Unexpected error occured while trying to parse settings file: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
         return 1;
     }
     return 0;
@@ -88,6 +91,7 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
                                   "JSON type error occured while trying to create clear report: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
     catch (const json::exception &e)
@@ -95,12 +99,14 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
         utils::ConsoleLogger::log(LogLevel::Error, "JSON error occured while trying to create clear report: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
     catch (const std::exception &e)
     {
         utils::ConsoleLogger::log(
             LogLevel::Error, std::string("Unexpected error occured while trying to create clear report: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
 }
@@ -235,6 +241,7 @@ void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core:
             utils::ConsoleLogger::log(LogLevel::Error, "JSON dump error occured while trying to create clear report: ");
             utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
             utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+            utils::ConsoleLogger::flush_errors_to_ui();
             return;
         }
     }
@@ -244,6 +251,7 @@ void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core:
                                   "JSON type error occured while trying to create clear report: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
     catch (const json::exception &e)
@@ -251,12 +259,14 @@ void core::ConfigLoader::export_report_to_json(std::ofstream &report_file, core:
         utils::ConsoleLogger::log(LogLevel::Error, "JSON error occured while trying to create clear report: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
         utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
     catch (const std::exception &e)
     {
         utils::ConsoleLogger::log(
             LogLevel::Error, std::string("Unexpected error occured while trying to create clear report: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
         return;
     }
 }

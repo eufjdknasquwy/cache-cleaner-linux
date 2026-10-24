@@ -261,10 +261,12 @@ void core::CacheCleaner::run_command(const std::string &command, const ClearOpti
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Code: " + std::to_string(e.code())));
         result.exit_code = e.code();
+        utils::ConsoleLogger::flush_errors_to_ui();
     }
     catch (const std::exception &e)
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
+        utils::ConsoleLogger::flush_errors_to_ui();
     }
     s_del_result.commands[command] = result.exit_code;
 }
@@ -280,6 +282,7 @@ void core::CacheCleaner::delete_paths(const fs::directory_entry &entry, const Cl
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to delete file: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
+        utils::ConsoleLogger::flush_errors_to_ui();
     }
 }
 void core::CacheCleaner::delete_paths(const fs::path &fs_path, const ClearOptions &options)
@@ -294,6 +297,7 @@ void core::CacheCleaner::delete_paths(const fs::path &fs_path, const ClearOption
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to delete file: ");
         utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
+        utils::ConsoleLogger::flush_errors_to_ui();
     }
 }
 void core::CacheCleaner::del_to_trash(const std::string &path, const core::ClearOptions &options)
@@ -316,10 +320,12 @@ void core::CacheCleaner::del_to_trash(const std::string &path, const core::Clear
         {
             utils::ConsoleLogger::log(core::LogLevel::Warning,
                                       ("Permission denied, skipping " + path + ", try running with sudo"));
+            utils::ConsoleLogger::flush_errors_to_ui();
         }
         else
         {
             utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to delete " + path + ": " + e.what()));
+            utils::ConsoleLogger::flush_errors_to_ui();
         }
     }
 }
@@ -343,12 +349,14 @@ void core::CacheCleaner::clear_trash_bin()
                 utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
                 utils::ConsoleLogger::log(core::LogLevel::Error, "Code: " + std::to_string(e.code().value()) + " (" +
                                                                      e.code().message() + ")");
+                utils::ConsoleLogger::flush_errors_to_ui();
             }
             catch (const std::exception &e)
             {
                 utils::ConsoleLogger::log(core::LogLevel::Error,
                                           "Unexpected error occured while trying to clear user trash bin: ");
                 utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+                utils::ConsoleLogger::flush_errors_to_ui();
             }
         })
         .detach();

@@ -3,3 +3,4 @@ build/
 compile_commands.json
 compile.sh
 .clangd
+build_appimage.sh

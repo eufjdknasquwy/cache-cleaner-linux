@@ -5,8 +5,7 @@
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
 
-A utility for Linux to free disk space by cleaning caches of
-package managers and user-added directories
+A utility for Linux to free disk space by cleaning caches of package managers and other caches
 
 ## Table of contents
 
@@ -27,7 +26,7 @@ package managers and user-added directories
 ## Status
 
 **Alpha (v0.4.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
-and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journald`.
+and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journalctl`.
 Supports GUI and CLI modes.
 
 ## Screenshots
@@ -39,8 +38,8 @@ Supports GUI and CLI modes.
 
 ### GUI
 - Categories by danger level
-- Checkboxes for individual paths, "Choose everything" per category
-- Confirmation dialogs for dangerous categories (double confirm for Warning and others)
+- Checkboxes for individual paths, displayed in a table
+- Confirmations before deleting
 - User files are moved to trash
 - Clear trash button
 
@@ -54,26 +53,26 @@ Supports GUI and CLI modes.
 - AUR helpers: `yay`, `paru`
 - Programming languages such as `pip`, `go`, `nuget`, `npm`
 - System package managers such as `pacman`, `apt`, `dnf`, `flatpak`, `snap`
-- System cache and logs: `journalctl`
+- System cache and logs: `docker, podman, journalctl`
 
 ### Configuration
 - `~/.config/cache-cleaner/user_categories.json`
 
 ## How it works
 
-1. Reads `categories.json` (built-in) and `~/.config/cache-cleaner/user_categories.json` (user)
-2. Displays them in the window as checkboxes, grouped by danger level
+1. Reads built-in and user json configs with cache paths
+2. Displays them in the window as table rows, grouped by danger level
 3. When you click **Clear selected**:
-   - **User caches** are moved to trash
-   - **System caches** are cleared via `pkexec` (sudo command)
-4. Confirmation dialogs for dangerous categories
+   - **Non-system caches** are moved to trash
+   - **System caches** are cleared via `pkexec` (sudo)
+4. Confirms before cleaning
 
 ## Dependencies
 
 - A C++20 compiler (GCC 10+ or Clang 11+)
 - CMake 3.16+
 - nlohmann-json
-- gtkmm-3.0 (is needed for GUI compilation)
+- gtkmm-3.0
 
 ## Installation
 
@@ -83,7 +82,7 @@ git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
 cmake -B build -S .
 cmake --build build
-sudo cmake --install build # for .desktop file in your system and terminal command
+sudo cmake --install build # for .desktop file in your system, and a terminal command
 ```
 
 ## Usage
@@ -93,6 +92,10 @@ sudo cmake --install build # for .desktop file in your system and terminal comma
 2. Run:
    ```bash
    ./build/cache-cleaner
+   ```
+   or
+   ```bash
+   build/cache-cleaner
    ```
 3. Select the caches you want to clean and confirm.
 
@@ -127,33 +130,29 @@ Example:
 ## Known issues
 
 - No fallback to `sudo` if `pkexec` is unavailable
-- No user feedback in GUI (no error messages in GUI)
 - No progress bar for delete operations
-- No way to cancel deletion
+- No way to cancel deletion (except for Ctrl+C, which is bad)
 
 ## Roadmap
 
 ### Done
 - [x] Cleaning package manager caches such as `pip`, `yay` and more
-- [x] Cleaning System caches and system package managers such as `pacman`, `apt` and more
-- [x] Systemd logs (`journalctl`)
+- [x] Cleaning system caches and system package managers such as `pacman`, `apt` and more
+- [x] Cleaning Systemd logs (`journalctl`)
 - [x] Confirmation dialogs before deleting
-- [x] Root cache cleaning via `pkexec`
-- [x] Basic CLI mode (`--list`, `--delete-x`, `--dry-run`, `--yes`)
+- [x] Root cache cleaning
+- [x] CLI mode (`--list`, `--delete-x`, `--dry-run`, `--yes`)
 - [x] Report after cleaning
-- [x] Cache size showcase
-- [x] Logging
-- [x] `--dry-run`
-- [x] `--yes` for scripts
-- [x] Cache sorts out by descending
-- [x] `Clear trash` button
-- [x] Export clear report to JSON
+- [x] Cache size showcase and sorting by descending size
+- [x] Logging in terminal and to file
 - [x] Colorful logging in terminal
-- [x] Custom CSS and animations
+- [x] `--dry-run` and `--yes` params for scripts
+- [x] Export clear report to JSON
+- [x] Custom style and animations
+- [x] User feedback in GUI (error messages)
 
 ### Planned
 - [ ] Port from GTK3 to GTK4
-- [ ] User feedback in GUI (errors, messages)
 - [ ] Progress bar when deleting
 - [ ] Ability to cancel deletion
 - [ ] DE integration (notifications, tray)

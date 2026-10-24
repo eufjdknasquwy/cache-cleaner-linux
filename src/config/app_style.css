@@ -64,10 +64,10 @@ expander {
 }
 
 expander title {
+  outline: none;
   color: white;
   font-weight: bold;
   padding: 10px;
-  transition: color 200ms ease;
 }
 
 expander:hover {
@@ -75,13 +75,20 @@ expander:hover {
 }
 
 treeview {
+  outline: none;
   background-color: @bg_dark;
   color: @text_main;
   border: none;
   transition: background-color 200ms ease;
 }
 
+treeview cell {
+  outline: none;
+  border: none;
+}
+
 treeview:selected {
+  outline: none;
   background-color: alpha(@accent, 0.15);
   color: white;
   border: none;
@@ -89,6 +96,7 @@ treeview:selected {
 }
 
 treeview header button {
+  outline: none;
   background-color: @bg_light;
   color: @text_dim;
   border: none;
@@ -103,12 +111,19 @@ treeview header button:hover {
   color: white;
 }
 
+treeview.view {
+  outline: none;
+}
+
 scrollbar {
+  transition: all 350ms ease;
   background-color: @bg_dark;
+  outline: none;
   border: none;
 }
 
 scrollbar slider {
+  transition: all 350ms ease;
   background-color: @border_color;
   border-radius: 6px;
   min-width: 8px;
@@ -116,7 +131,11 @@ scrollbar slider {
 }
 
 scrollbar slider:hover {
+  transition: all 350ms ease;
   background-color: @text_dim;
+  border-radius: 6px;
+  min-width: 8px;
+  min-height: 8px;
 }
 
 checkbutton {
