@@ -76,7 +76,18 @@ Supports GUI and CLI modes.
 
 ## Installation
 
-### Building from source
+### AUR (arch-based)
+```bash
+yay -S cache-cleaner
+# or
+paru -S cache-cleaner
+```
+
+### Other distributions (appimage)
+```bash
+```
+
+### Other distribution (Building from source)
 ```bash
 git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
@@ -91,11 +102,7 @@ sudo cmake --install build # for .desktop file in your system, and a terminal co
 1. Build the project (see above)
 2. Run:
    ```bash
-   ./build/cache-cleaner
-   ```
-   or
-   ```bash
-   build/cache-cleaner
+   cache-cleaner
    ```
 3. Select the caches you want to clean and confirm.
 

@@ -9,12 +9,13 @@ license=('MIT')
 depends=('gtkmm3' 'nlohmann-json')
 makedepends=('cmake' 'ninja')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/v$pkgver.tar.gz")
-sha256sums=('SKIP')
+sha256sums=('935286707f0fb9798f18f2d814ba5093039dff8ae370dd04761ce2a0aedccdce')
 
 build() {
-  cmake -S "$pkgname-linux-$pkgver" -B build -G Ninja \
+  cmake -S "cache-cleaner-linux-$pkgver" -B build -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_INSTALL_PREFIX=/usr \
+    -DCMAKE_SKIP_RPATH=ON
   cmake --build build
 }
 

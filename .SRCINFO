@@ -1,0 +1,15 @@
+pkgbase = cache-cleaner
+	pkgdesc = A utility for Linux to free disk space by cleaning caches of package managers and other caches
+	pkgver = 0.4.0
+	pkgrel = 1
+	url = https://github.com/eufjdknasquwy/cache-cleaner-linux
+	arch = x86_64
+	license = MIT
+	makedepends = cmake
+	makedepends = ninja
+	depends = gtkmm3
+	depends = nlohmann-json
+	source = cache-cleaner-0.4.0.tar.gz::https://github.com/eufjdknasquwy/cache-cleaner-linux/archive/v0.4.0.tar.gz
+	sha256sums = 935286707f0fb9798f18f2d814ba5093039dff8ae370dd04761ce2a0aedccdce
+
+pkgname = cache-cleaner

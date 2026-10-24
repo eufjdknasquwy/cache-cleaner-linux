@@ -3,4 +3,12 @@ build/
 compile_commands.json
 compile.sh
 .clangd
-build_appimage.sh
+pkg/
+*.pkg.tar.zst
+*.tar.gz
+*.tar.xz
+*.tar.bz2
+*.SRCINFO.bak
+AppDir/
+src/cache-cleaner-linux-*/
+*.AppImage
