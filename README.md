@@ -5,7 +5,7 @@
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
 [![CI](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml)
-[![AUR version](https://img.shields.io/aur/version/cache-cleaner?color=1793d1&label=AUR&logo=arch-linux)](https://aur.archlinux.org/packages/cache-cleaner)
+[![AUR version](https://img.shields.io/aur/version/cache-cleaner-linux?color=1793d1&label=AUR&logo=arch-linux)](https://aur.archlinux.org/packages/cache-cleaner-linux)
 
 A utility for Linux to free disk space by cleaning caches of package managers and other caches
 
