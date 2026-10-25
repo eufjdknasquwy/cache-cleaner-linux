@@ -8,6 +8,7 @@
 #include "utils/console_logger.h"
 #include <cstdint>
 #include <future>
+#include <gtkmm/expander.h>
 #include <gtkmm/revealer.h>
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
@@ -32,18 +33,18 @@ ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 
     m_dispatcher.connect(sigc::mem_fun(*this, &ui::MainWindow::on_scan_cache_finished));
 
-    m_window_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, DEFAULT_SPACING)); // контейнер на весь экран
+    m_window_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, DEFAULT_SPACING)); // fullscreen container
     m_window->add(*m_window_box);
     ui::UIHelper::set_margin(*m_window_box, DEFAULT_MARGIN);
 
-    // разделение окна на 3 контейнера
+    // splitting the window into 3 containers
     m_top_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, DEFAULT_SPACING));
     m_scroll = Gtk::manage(new Gtk::ScrolledWindow());
     m_scroll->set_policy(Gtk::POLICY_NEVER, Gtk::POLICY_AUTOMATIC);
     m_content_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_VERTICAL, DEFAULT_SPACING));
     m_bottom_box = Gtk::manage(new Gtk::Box(Gtk::ORIENTATION_HORIZONTAL, DEFAULT_SPACING));
 
-    // добавление 3 контейнеров окна
+    // adding 3 window containers
     m_window_box->pack_start(*m_top_box, false, false, DEFAULT_PADDING);
     m_scroll->add(*m_content_box);
     m_window_box->pack_start(*m_scroll, true, true, DEFAULT_PADDING);
@@ -225,18 +226,19 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
 
     std::vector<CacheRow> cache_rows;
     std::unordered_map<std::string, std::future<std::uintmax_t>> futures;
+
     for (const auto &[name, path] : paths)
     {
         if (!core::CacheCleaner::exists(path))
         {
             if (std::string(PROJECT_BUILD_TYPE) == "Debug")
-                utils::ConsoleLogger::log(core::LogLevel::Warning,
+                utils::ConsoleLogger::log(core::LogLevel::Debug,
                                           ("name: " + name + ", path: " + path + " doesn't exist"));
             continue;
         }
 
         if (std::string(PROJECT_BUILD_TYPE) == "Debug")
-            utils::ConsoleLogger::log(core::LogLevel::Info, ("name: " + name + ", path: " + path + " exists"));
+            utils::ConsoleLogger::log(core::LogLevel::Debug, ("name: " + name + ", path: " + path + " exists"));
 
         futures[name] = (std::async(std::launch::async, core::CacheCleaner::size, path));
     }
@@ -258,7 +260,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
             utils::ConsoleLogger::flush_errors_to_ui();
         }
 
-        std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : "(" + core::CacheCleaner::format_size(bytes) + ")";
+        std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : core::CacheCleaner::format_size(bytes);
 
         std::string cache_desc;
         std::string command;
@@ -306,8 +308,6 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
     bottom_box->pack_start(*clear_selected, false, false, 5);
     bottom_box->pack_start(*choose_everything, false, false, 5);
 
-    cache_rows.size() > 0 ? expander->show_all() : expander->hide();
-
     clear_selected->signal_clicked().connect(
         [this, box, expander, columns, ref_list_store, paths]()
         {
@@ -352,6 +352,13 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
             }
         });
 
+    if (cache_rows.empty())
+    {
+        expander->hide();
+        return nullptr;
+    }
+
+    expander->show_all();
     return expander;
 }
 bool ui::MainWindow::confirm_deletion(std::vector<std::string> paths_to_clear, bool is_safe)

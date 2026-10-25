@@ -22,6 +22,7 @@ namespace utils
             static constexpr const char *GREEN = "\033[32m";
             static constexpr const char *YELLOW = "\033[33m";
             static constexpr const char *RED = "\033[91m";
+            static constexpr const char *RESET = "\033[0m";
 
             static std::string s_home_path;
             static std::string s_error_buffer;

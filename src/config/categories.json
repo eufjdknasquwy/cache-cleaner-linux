@@ -35,7 +35,9 @@
         { "name": "swift-cache", "desc": "Swift build cache", "path": "~/.swiftpm/cache", "type": "path" },
 
         // other
-        { "name": "Thumbnails", "desc": "Image preview cache", "path": "~/.cache/thumbnails", "type": "path" }
+        { "name": "Thumbnails", "desc": "Image preview cache", "path": "~/.cache/thumbnails", "type": "path" },
+        { "name": "Ccache", "desc": "Compiler cache", "path": "~/.cache/ccache", "type": "path" },
+        { "name": "Flatpak", "desc": "Flatpak cache", "path": "~/.cache/flatpak", "type": "path" }
       ]
     },
     {
@@ -119,9 +121,7 @@
         { "name": "KeePassXC", "desc": "Password managers cache", "path": "~/.cache/keepassxc", "type": "path"},
         { "name": "CopyQ", "desc": "CopyQ cache", "path": "~/.cache/copyq", "type": "path"},
         { "name": "Obsidian", "desc": "Obsidian notes cache", "path": "~/.cache/obsidian", "type": "path"},
-        { "name": "Huggingface", "desc": "AI models cache", "path": "~/.cache/huggingface", "type": "path" },
-        { "name": "Ccache", "path": "~/.cache/ccache", "type": "path" },
-        { "name": "Flatpak", "desc": "Flatpak cache", "path": "~/.cache/flatpak", "type": "path" },
+        { "name": "Huggingface", "desc": "AI models cache (may be huge,\nwill be re-downloaded)", "path": "~/.cache/huggingface", "type": "path" },
         { "name": "Font config", "desc": "Font cache", "path": "~/.cache/fontconfig", "type": "command", "command": "fc-cache -f" },
         { "name": "Icon cache", "desc": "Icon cache", "path": "~/.cache/icon-cache.kcache", "type": "path" },
         { "name": "Man", "desc": "Man pages cache", "path": "~/.cache/man", "type": "command", "command": "mandb -c" },

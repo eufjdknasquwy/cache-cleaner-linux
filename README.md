@@ -4,6 +4,8 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](https://opensource.org/licenses/MIT)
 ![C++](https://img.shields.io/badge/C%2B%2B-20-blue)
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
+[![CI](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml)
+[![AUR version](https://img.shields.io/aur/version/cache-cleaner?color=1793d1&label=AUR&logo=arch-linux)](https://aur.archlinux.org/packages/cache-cleaner)
 
 A utility for Linux to free disk space by cleaning caches of package managers and other caches
 
@@ -25,7 +27,7 @@ A utility for Linux to free disk space by cleaning caches of package managers an
 
 ## Status
 
-**Alpha (v0.4.0)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
+**Alpha (v0.4.1)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
 and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journalctl`.
 Supports GUI and CLI modes.
 
@@ -72,11 +74,12 @@ See - [Configuration](#configuration)
 - A C++20 compiler (GCC 10+ or Clang 11+)
 - CMake 3.16+
 - nlohmann-json
-- gtkmm-3.0
+- gtkmm-3.0 (or gtkmm3-dev version)
+- GUI polkit agent (recommended, program or system may freeze on system cache cleaning, if you do not have it. e.g. polkit-gnome)
 
 ## Installation
 
-### AUR (arch-based)
+### AUR (arch-based distributions)
 ```bash
 yay -S cache-cleaner
 # or
@@ -86,13 +89,13 @@ paru -S cache-cleaner
 ### Other distributions (appimage)
 1. Go to the [Releases](https://github.com/eufjdknasquwy/cache-cleaner-linux/releases) page.
 2. Download the latest `cache-cleaner-x86_64.AppImage` file.
-3. Open your terminal, go to the directory where you downloaded the file, and make it executable:
+3. Open directory with downloaded file in terminal, make it executable and launch it:
   ```bash
   chmod +x cache-cleaner-x86_64.AppImage
   ./cache-cleaner-x86_64.AppImage
   ```
 
-### Other distribution (building from source)
+### Other distributions (building from source)
 ```bash
 git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux

@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
     - uses: actions/checkout@v4
 
@@ -29,6 +29,9 @@ jobs:
 
     - name: Smoke Test
       run: ./build/cache-cleaner --version
+
+    - name: Smoke Test
+      run: ./build/cache-cleaner --list | grep apt
 
     - name: Integration Test (CLI)
       run: |

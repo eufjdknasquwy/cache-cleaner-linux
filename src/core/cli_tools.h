@@ -7,7 +7,6 @@ namespace core::cli
         public:
             CliTools() = delete;
             static void delete_category(core::DangerLevel danger);
-            static void list_category(core::DangerLevel danger);
             static std::vector<std::string> list_all_categories();
 
         private:

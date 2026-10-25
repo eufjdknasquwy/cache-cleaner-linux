@@ -65,17 +65,17 @@ void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &ms
     switch (level)
     {
     case core::LogLevel::Info:
-        std::cout << GREEN << full_msg << std::endl;
+        std::cout << GREEN << full_msg << RESET << std::endl;
         break;
     case core::LogLevel::Warning:
-        std::cout << YELLOW << full_msg << std::endl;
+        std::cout << YELLOW << full_msg << RESET << std::endl;
         break;
     case core::LogLevel::Error:
-        std::cout << RED << full_msg << std::endl;
+        std::cout << RED << full_msg << RESET << std::endl;
         s_error_buffer += msg + "\n";
         break;
     default:
-        std::cout << full_msg << std::endl;
+        std::cout << RESET << full_msg << RESET << std::endl;
         break;
     }
 
@@ -118,6 +118,8 @@ std::string utils::ConsoleLogger::level_to_str(const core::LogLevel level)
         return "WARNING";
     case core::LogLevel::Error:
         return "ERROR";
+    case core::LogLevel::Debug:
+        return "DEBUG";
     }
     return "UNKNOWN";
 }

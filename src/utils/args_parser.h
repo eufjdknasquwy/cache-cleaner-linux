@@ -14,7 +14,7 @@ namespace utils
         private:
             static constexpr int HELP_FLAG_WIDTH = 40;
             static constexpr int EXIT_CODE_NO_ERRS = 0;
-            static constexpr int EXIT_CODE_ERRS = 1;
+            static constexpr int EXIT_CODE_ERR = 1;
 
             static std::vector<std::string> s_actions;
     };

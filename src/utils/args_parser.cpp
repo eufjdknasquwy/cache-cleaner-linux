@@ -62,6 +62,11 @@ void utils::ArgsParser::parse(int &argc, char *argv[])
         {
             s_actions.push_back("--delete-user");
         }
+        else
+        {
+            utils::ConsoleLogger::printmsg("Unknown parameter '" + arg + "', see --help or -h");
+            std::exit(EXIT_CODE_ERR);
+        }
     }
     if (s_actions.empty())
         return;

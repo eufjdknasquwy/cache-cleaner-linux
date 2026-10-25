@@ -15,8 +15,6 @@ namespace core
 {
     Config ConfigLoader::s_config;
 } // namespace core
-/** Loads config from json
- */
 std::map<std::string, std::string> core::ConfigLoader::get_paths_by_danger(core::DangerLevel danger)
 {
     std::map<std::string, std::string> names_and_paths;
@@ -27,6 +25,8 @@ std::map<std::string, std::string> core::ConfigLoader::get_paths_by_danger(core:
     }
     return names_and_paths;
 }
+/** Loads config from json
+ */
 int core::ConfigLoader::load_json_file(json &json_config, const std::string &path)
 {
     try

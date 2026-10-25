@@ -13,6 +13,7 @@ namespace core
     {
         Info,
         Warning,
-        Error
+        Error,
+        Debug
     };
 } // namespace core

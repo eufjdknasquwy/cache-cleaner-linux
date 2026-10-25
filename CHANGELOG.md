@@ -1,6 +1,13 @@
 # Changelog
 
-## Latest ([v0.4.0])
+## Latest version ([v0.4.1]) - 2026-10-25
+
+### Fixed
+- Empty categories showing up, even though they dont have available caches
+- CLI version not showing system package manager, while GUI does
+- Incorrect color enabling in terminal logging
+
+## Version ([v0.4.0]) - 2026-10-25
 
 ### Added
 - Clear report export to `JSON`
@@ -14,10 +21,12 @@
 - `cache-cleaner.desktop` file
 - Logging to file
 - User feedback in GUI (error messages)
+- AUR package (PKGBUILD)
+- Appimage
 
 ### Changed
 - Improved UI: cache sorted in tables, custom style with animations
-- Fixed crashes on incorrect JSON config
+- Fixed crashes on incorrect JSON format
 - Improved JSON parsing: more flexible config
 
 ### Fixed
