@@ -15,6 +15,7 @@ namespace utils
 
             static void log(const core::LogLevel level, const std::string &message);
             static void flush_errors_to_ui();
+            static void reset_error_buffer();
             static void export_report_to_json(core::ClearReport &clear_report);
 
         private:

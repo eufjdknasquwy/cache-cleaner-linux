@@ -8,7 +8,7 @@ void ui::Css::apply_css()
     auto css_provider = Gtk::CssProvider::create();
     try
     {
-        css_provider->load_from_path(core::get_css_style_path().string());
+        css_provider->load_from_resource("/org/example/cache-cleaner/app_style.css");
     }
     catch (const Glib::Error &e)
     {

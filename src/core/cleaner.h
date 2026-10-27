@@ -1,7 +1,7 @@
 #pragma once
 #include "constants.h"
 #include "core/config_loader.h"
-#include "structs.h"
+#include "core/structs.h"
 #include <filesystem>
 namespace core
 {
@@ -14,7 +14,6 @@ namespace core
                                                 const core::ClearOptions &options = {});
             static bool exists(const std::string &path_str);
             static uintmax_t size(const std::string &path_str);
-            static std::string format_size(std::uintmax_t bytes);
             static void clear_trash_bin();
 
         private:

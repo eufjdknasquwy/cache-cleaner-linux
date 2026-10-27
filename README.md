@@ -22,6 +22,7 @@ A utility for Linux to free disk space by cleaning caches of package managers an
 - [Limitations](#limitations)
 - [Known issues](#known-issues)
 - [Roadmap](#roadmap)
+- [Changelog](#changelog)
 - [License](#license)
 - [Credits](#credits)
 
@@ -71,7 +72,7 @@ See - [Configuration](#configuration)
 
 ## Dependencies
 
-- A C++20 compiler (GCC 10+ or Clang 11+)
+- A C++20 compiler (GCC 10+ or Clang 11+ or other)
 - CMake 3.16+
 - nlohmann-json
 - gtkmm-3.0 (or gtkmm3-dev version)
@@ -81,14 +82,14 @@ See - [Configuration](#configuration)
 
 ### AUR (arch-based distributions)
 ```bash
-yay -S cache-cleaner
+yay -S cache-cleaner-linux
 # or
-paru -S cache-cleaner
+paru -S cache-cleaner-linux
 ```
 
 ### Other distributions (appimage)
 1. Go to the [Releases](https://github.com/eufjdknasquwy/cache-cleaner-linux/releases) page.
-2. Download the latest `cache-cleaner-x86_64.AppImage` file.
+2. Download the latest `cache-cleaner-x86_64.AppImage` file
 3. Open directory with downloaded file in terminal, make it executable and launch it:
   ```bash
   chmod +x cache-cleaner-x86_64.AppImage
@@ -101,7 +102,7 @@ git clone https://github.com/eufjdknasquwy/cache-cleaner-linux
 cd cache-cleaner-linux
 cmake -B build -S .
 cmake --build build
-sudo cmake --install build # for .desktop file in your system, and a terminal command
+sudo cmake --install build # for .desktop file and a terminal command in your system
 ```
 
 ## Usage
@@ -114,14 +115,14 @@ sudo cmake --install build # for .desktop file in your system, and a terminal co
   # or appimage version:
   ./cache-cleaner-x86_64.AppImage
   ```
-3. Select the caches you want to clean and confirm.
+3. Select the caches you want to clean and confirm
 
 ### CLI
-See `cache-cleaner --help` in terminal
+See `cache-cleaner --help` in your terminal
 
 ## Configuration
 
-`~/.config/cache-cleaner/user_categories.json` - path to user-added cache paths. Created automatically on the first run
+`~/.config/cache-cleaner/user_categories.json` - path to custom configuration
 
 Example:
 
@@ -138,11 +139,13 @@ Example:
 }
 ```
 
+For details, see [Configuration](docs/configuration/Configuration.md)
+
 ## Limitations
 
 - Linux only
 - Root caches require polkit agent
-- Can't currently launch user's own scripts for cleaning cache
+- Can't launch user's own scripts for cleaning cache
 
 ## Known issues
 
@@ -175,10 +178,15 @@ Example:
 - [ ] DE integration (notifications, tray)
 - [ ] Search cache in categories
 - [ ] Ability to add scripts for cleaning cache in user config
+- [ ] Docker package
+
+## Changelog
+
+![Changelog](CHANGELOG.md)
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+MIT, see [LICENSE](LICENSE)
 
 ## Credits
 

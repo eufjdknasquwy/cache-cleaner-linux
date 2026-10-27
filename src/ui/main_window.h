@@ -52,7 +52,8 @@ namespace ui
 
             static constexpr const char *SYSTEM_EXPANDER_TITLE = "System cache";
             static constexpr const char *SYSTEM_EXPANDER_DESC =
-                "This cache contains package managers and more (Warning!)";
+                "This cache contains package managers and more (Warning!)\n\nNote, that if you do not have a GUI "
+                "polkit agent, you\nshould launch program with sudo or use CLI mode in sudo";
 
             static constexpr const char *USER_EXPANDER_TITLE = "User cache";
             static constexpr const char *USER_EXPANDER_DESC = "Your own added cache";

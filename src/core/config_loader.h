@@ -1,6 +1,6 @@
 #pragma once
+#include "core/enums.h"
 #include "core/structs.h"
-#include "enums.h"
 #include <nlohmann/json_fwd.hpp>
 #include <string>
 using json = nlohmann::json;
@@ -35,14 +35,18 @@ namespace core
 
         private:
             static core::Config s_config;
+
+            static constexpr const char *DEFAULT_CATEGORIES_PATH = "/org/example/cache-cleaner/categories.json";
+            static constexpr const char *DEFAULT_PACKAGE_MANAGERS_PATH =
+                "/org/example/cache-cleaner/package_managers.json";
+
             static constexpr const char *DEFAULT_USER_CONFIG = R"({
   "categories":
   [
     {
-      "category" : "User",
-      "danger_level": "User",
       "entries":
       [
+        { "name": "example-cache", "path": "~/.cache/example", "type": "path" }
       ]
     }
   ]
@@ -53,6 +57,7 @@ namespace core
 
             static void load_user_config();
             static int load_json_file(json &json_config, const std::string &path);
+            static json load_embedded_json(const std::string &resource_path);
             static void ensure_user_config_exists();
     };
 } // namespace core

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/org/example/cache-cleaner">
+    <file>categories.json</file>
+    <file>package_managers.json</file>
+    <file>app_style.css</file>
+  </gresource>
+</gresources>

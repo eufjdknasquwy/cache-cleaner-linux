@@ -21,6 +21,7 @@ int main(int argc, char *argv[])
             catch (const std::exception &e)
             {
                 utils::ConsoleLogger::log(core::LogLevel::Error, ("Config load failed: " + std::string(e.what())));
+                utils::ConsoleLogger::reset_error_buffer();
             }
         });
     std::thread load_pm_config_thread(
@@ -34,6 +35,7 @@ int main(int argc, char *argv[])
             {
                 utils::ConsoleLogger::log(core::LogLevel::Error,
                                           std::string("Package manager config load failed: ") + e.what());
+                utils::ConsoleLogger::reset_error_buffer();
             }
         });
 

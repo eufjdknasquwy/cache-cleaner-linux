@@ -1,14 +1,12 @@
 #include "core/cleaner.h"
-#include "config_loader.h"
-#include "constants.h"
+#include "core/config_loader.h"
+#include "core/constants.h"
 #include "core/enums.h"
 #include "utils/console_logger.h"
 #include "utils/system_detector.h"
 #include <cstdint>
 #include <filesystem>
 #include <future>
-#include <giomm/file.h>
-#include <glibmm/spawn.h>
 #include <string>
 #include <thread>
 #include <unordered_set>
@@ -84,28 +82,6 @@ uintmax_t core::CacheCleaner::size(const std::string &path_str)
         }
     }
     return total;
-}
-std::string core::CacheCleaner::format_size(std::uintmax_t bytes)
-{
-    const char *units[] = {"B", "KB", "MB", "GB", "TB"};
-    double size = static_cast<double>(bytes);
-    int unit = 0;
-
-    while (size >= 1024.0 && unit < 4)
-    {
-        size /= 1024.0;
-        ++unit;
-    }
-
-    char buf[32];
-    if (unit == 0)
-        std::snprintf(buf, sizeof(buf), "%ju %s", bytes, units[unit]);
-    else if (unit == 1)
-        std::snprintf(buf, sizeof(buf), "%.0f %s", size, units[unit]);
-    else
-        std::snprintf(buf, sizeof(buf), "%.1f %s", size, units[unit]);
-
-    return buf;
 }
 /** Sorts out cache in std::vector and then calls the clear_cache function
  * @ param dirty_paths_to_clear: std::vector with unparsed cache paths

@@ -98,6 +98,10 @@ void utils::ConsoleLogger::flush_errors_to_ui()
 
     s_error_buffer.clear();
 }
+void utils::ConsoleLogger::reset_error_buffer()
+{
+    s_error_buffer.clear();
+}
 std::string utils::ConsoleLogger::timestamp(std::string format)
 {
     auto now = std::chrono::system_clock::now();

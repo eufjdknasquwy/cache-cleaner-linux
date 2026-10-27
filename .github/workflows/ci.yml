@@ -30,15 +30,13 @@ jobs:
     - name: Smoke Test
       run: ./build/cache-cleaner --version
 
-    - name: Smoke Test
+    - name: Smoke Test 2
       run: ./build/cache-cleaner --list | grep apt
 
     - name: Integration Test (CLI)
       run: |
         mkdir -p ~/.cache/gtk-4.0
         touch ~/.cache/gtk-4.0/test_file.txt
-
-        ./build/cache-cleaner --list > output.txt
 
         ./build/cache-cleaner --delete-warning --dry-run
 

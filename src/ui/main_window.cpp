@@ -1,6 +1,7 @@
 #include "ui/main_window.h"
 #include "core/cleaner.h"
 #include "core/config_loader.h"
+#include "core/constants.h"
 #include "core/enums.h"
 #include "ui/css.h"
 #include "ui/message_dialog_helper.h"
@@ -8,8 +9,6 @@
 #include "utils/console_logger.h"
 #include <cstdint>
 #include <future>
-#include <gtkmm/expander.h>
-#include <gtkmm/revealer.h>
 #include <string>
 ui::MainWindow::MainWindow() : m_config(core::ConfigLoader::get_config())
 {
@@ -260,7 +259,7 @@ Gtk::Expander *ui::MainWindow::create_category(const std::string &title, const s
             utils::ConsoleLogger::flush_errors_to_ui();
         }
 
-        std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : core::CacheCleaner::format_size(bytes);
+        std::string size_str = bytes == UNKNOWN_SIZE ? "unknown" : core::format_size(bytes);
 
         std::string cache_desc;
         std::string command;

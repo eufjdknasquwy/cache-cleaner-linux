@@ -1,11 +1,12 @@
 #include "config_loader.h"
-#include "constants.h"
 #include "core/cleaner.h"
+#include "core/constants.h"
 #include "core/enums.h"
 #include "utils/console_logger.h"
 #include "utils/system_detector.h"
 #include <filesystem>
 #include <fstream>
+#include <giomm.h>
 #include <nlohmann/json.hpp>
 #include <stdexcept>
 #include <string>
@@ -25,17 +26,26 @@ std::map<std::string, std::string> core::ConfigLoader::get_paths_by_danger(core:
     }
     return names_and_paths;
 }
-/** Loads config from json
- */
 int core::ConfigLoader::load_json_file(json &json_config, const std::string &path)
 {
     try
     {
-        std::ifstream config_file;
-        config_file.open(path);
-        if (!config_file.is_open())
-            throw std::runtime_error("Failed openning config");
-        json_config = json::parse(config_file, nullptr, true, true);
+        if (path.starts_with("/org/example/cache-cleaner/"))
+        {
+            json_config = load_embedded_json(path);
+            if (json_config.is_null() || json_config.empty())
+                return 1;
+            return 0;
+        }
+        else
+        {
+            std::ifstream config_file;
+            config_file.open(path);
+            if (!config_file.is_open())
+                throw std::runtime_error("Failed openning config");
+            json_config = json::parse(config_file, nullptr, true, true);
+            return 0;
+        }
         return 0;
     }
     catch (const std::runtime_error &e)
@@ -63,6 +73,58 @@ int core::ConfigLoader::load_json_file(json &json_config, const std::string &pat
         return 1;
     }
     return 0;
+}
+json core::ConfigLoader::load_embedded_json(const std::string &resource_path)
+{
+    try
+    {
+        GError *error = nullptr;
+        GBytes *bytes = g_resources_lookup_data(resource_path.c_str(), G_RESOURCE_LOOKUP_FLAGS_NONE, &error);
+
+        if (error)
+        {
+            utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to load resource: " + resource_path);
+            utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + error->message);
+            g_error_free(error);
+            utils::ConsoleLogger::flush_errors_to_ui();
+            return json::object();
+        }
+
+        if (!bytes)
+            return json::object();
+
+        gsize size;
+        gconstpointer data = g_bytes_get_data(bytes, &size);
+        std::string json_str(static_cast<const char *>(data), size);
+
+        g_bytes_unref(bytes);
+
+        return json::parse(json_str, nullptr, true, true);
+    }
+    catch (const std::runtime_error &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to open settings resource: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
+        return nullptr;
+    }
+    catch (const json::parse_error &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to parse settings resource: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("ID: " + std::to_string(e.id)));
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Parse error at byte " + std::to_string(e.byte)));
+        utils::ConsoleLogger::flush_errors_to_ui();
+        return nullptr;
+    }
+    catch (const std::exception &e)
+    {
+        utils::ConsoleLogger::log(core::LogLevel::Error,
+                                  "Unexpected error occured while trying to parse settings resource: ");
+        utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + e.what());
+        utils::ConsoleLogger::flush_errors_to_ui();
+        return nullptr;
+    }
 }
 void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &entry, core::DangerLevel danger)
 {
@@ -113,7 +175,7 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
 void core::ConfigLoader::load_config()
 {
     json json_config;
-    if (load_json_file(json_config, get_categories_dir().string()) != 0)
+    if (load_json_file(json_config, std::string(DEFAULT_CATEGORIES_PATH)) != 0)
         return;
 
     s_config.entries.clear();
@@ -160,7 +222,7 @@ void core::ConfigLoader::load_user_config()
 void core::ConfigLoader::load_pm_config()
 {
     json json_config;
-    if (load_json_file(json_config, get_package_managers_dir().string()) != 0)
+    if (load_json_file(json_config, std::string(DEFAULT_PACKAGE_MANAGERS_PATH)) != 0)
         return;
 
     utils::SystemDetector::detect_distribution(json_config);

@@ -121,7 +121,7 @@ void utils::ArgsParser::print_help()
     utils::ConsoleLogger::printmsg("");
 
     utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "--dry-run [--delete-category]",
-                                         "Shows a list of caches that would be deleted");
+                                         "Doesn't delete anything, only a preview");
     utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "-y, --yes", "Skip confirmations");
     utils::ConsoleLogger::printmsg("");
     utils::ConsoleLogger::print_help_msg(HELP_FLAG_WIDTH, "--delete-safe", "Delete cache in safe category");
