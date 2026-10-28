@@ -83,7 +83,7 @@ json core::ConfigLoader::load_embedded_json(const std::string &resource_path)
 
         if (error)
         {
-            utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to load resource: " + resource_path);
+            utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to load resource: " + std::string(resource_path));
             utils::ConsoleLogger::log(core::LogLevel::Error, std::string("Message: ") + error->message);
             g_error_free(error);
             utils::ConsoleLogger::flush_errors_to_ui();
@@ -175,7 +175,7 @@ void core::ConfigLoader::fill_cache_entry(core::CacheEntry &cache, const json &e
 void core::ConfigLoader::load_config()
 {
     json json_config;
-    if (load_json_file(json_config, std::string(DEFAULT_CATEGORIES_PATH)) != 0)
+    if (load_json_file(json_config, DEFAULT_CATEGORIES_PATH) != 0)
         return;
 
     s_config.entries.clear();
@@ -222,7 +222,7 @@ void core::ConfigLoader::load_user_config()
 void core::ConfigLoader::load_pm_config()
 {
     json json_config;
-    if (load_json_file(json_config, std::string(DEFAULT_PACKAGE_MANAGERS_PATH)) != 0)
+    if (load_json_file(json_config, DEFAULT_PACKAGE_MANAGERS_PATH) != 0)
         return;
 
     utils::SystemDetector::detect_distribution(json_config);
@@ -261,7 +261,7 @@ void core::ConfigLoader::ensure_user_config_exists()
 /** Converts string danger level to enum type,
  * example: "Safe" => DangerLevel::Safe
  */
-core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string &d)
+core::DangerLevel core::ConfigLoader::parse_danger_level(const std::string_view d)
 {
     if (d == "Safe")
         return DangerLevel::Safe;

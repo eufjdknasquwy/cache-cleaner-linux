@@ -23,7 +23,8 @@ namespace utils
             static PackageManagers s_package_managers;
 
             static void detect_package_managers(const std::string &distro_id, const nlohmann::json &json_config = {});
-            static void detect_pm_by_distro_id(const std::string &distro_id, const nlohmann::json &json_config = {});
+            static void detect_pm_by_distro_id(const std::string_view distro_id,
+                                               const nlohmann::json &json_config = {});
             static void detect_pm_by_command(const std::string &command, const std::string &pm_name);
     };
 } // namespace utils

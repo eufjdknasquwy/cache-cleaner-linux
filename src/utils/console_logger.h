@@ -9,11 +9,10 @@ namespace utils
             ConsoleLogger() = delete;
             static void init();
 
-            static void printmsg(const char *message);
-            static void printmsg(const std::string &message);
+            static void printmsg(const std::string_view message);
             static void print_help_msg(const int indent, const char *arg, const char *desc);
 
-            static void log(const core::LogLevel level, const std::string &message);
+            static void log(const core::LogLevel level, const std::string_view message);
             static void flush_errors_to_ui();
             static void reset_error_buffer();
             static void export_report_to_json(core::ClearReport &clear_report);
@@ -29,7 +28,7 @@ namespace utils
             static std::string s_error_buffer;
             static std::ofstream s_log;
 
-            static std::string timestamp(std::string format);
+            static std::string timestamp(const std::string format);
             static std::string level_to_str(const core::LogLevel level);
     };
 } // namespace utils

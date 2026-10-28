@@ -13,7 +13,7 @@ void ui::Css::apply_css()
     catch (const Glib::Error &e)
     {
         utils::ConsoleLogger::log(core::LogLevel::Error, "Failed to load CSS style: ");
-        utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + e.what());
+        utils::ConsoleLogger::log(core::LogLevel::Error, "Message: " + std::string(e.what()));
     }
 
     Gtk::StyleContext::add_provider_for_screen(Gdk::Screen::get_default(), css_provider,

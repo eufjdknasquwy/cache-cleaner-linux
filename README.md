@@ -6,6 +6,7 @@
 ![Platform](https://img.shields.io/badge/platform-Linux-lightgrey)
 [![CI](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml/badge.svg)](https://github.com/eufjdknasquwy/cache-cleaner-linux/actions/workflows/ci.yml)
 [![AUR version](https://img.shields.io/aur/version/cache-cleaner-linux?color=1793d1&label=AUR&logo=arch-linux)](https://aur.archlinux.org/packages/cache-cleaner-linux)
+[![Changelog](https://img.shields.io/badge/Changelog-blue)](CHANGELOG.md)
 
 A utility for Linux to free disk space by cleaning caches of package managers and other caches
 
@@ -28,7 +29,7 @@ A utility for Linux to free disk space by cleaning caches of package managers an
 
 ## Status
 
-**Alpha (v0.4.1)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
+**Alpha (v0.4.2)** — supports `yay`, `paru`, `pip`, `go`, `nuget`, `npm`,
 and system caches: `pacman`, `apt`, `dnf`, `flatpak`, `snap`, `journalctl`.
 Supports GUI and CLI modes.
 
@@ -59,7 +60,8 @@ Supports GUI and CLI modes.
 - System cache and logs: `docker, podman, journalctl`
 
 ### Configuration
-See - [Configuration](#configuration)
+- You can add your own caches by editing `~/.config/cache-cleaner/user_categories.json`.
+See - [Configuration](#configuration-1)
 
 ## How it works
 
@@ -125,7 +127,6 @@ See `cache-cleaner --help` in your terminal
 `~/.config/cache-cleaner/user_categories.json` - path to custom configuration
 
 Example:
-
 ```json
 {
   "categories": [
@@ -178,11 +179,10 @@ For details, see [Configuration](docs/configuration/Configuration.md)
 - [ ] DE integration (notifications, tray)
 - [ ] Search cache in categories
 - [ ] Ability to add scripts for cleaning cache in user config
-- [ ] Docker package
 
 ## Changelog
 
-![Changelog](CHANGELOG.md)
+See [Changelog](CHANGELOG.md)
 
 ## License
 

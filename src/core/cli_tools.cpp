@@ -88,10 +88,9 @@ std::vector<std::string> core::cli::CliTools::list_all_categories()
     {
         for (const auto &[name, path] : paths)
         {
-            std::string final_path = path.empty() ? name : path;
-            if (core::CacheCleaner::exists(final_path))
+            if (core::CacheCleaner::exists(path))
             {
-                all_paths.push_back(final_path);
+                all_paths.push_back(path);
             }
         }
     };

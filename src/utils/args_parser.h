@@ -16,6 +16,6 @@ namespace utils
             static constexpr int EXIT_CODE_NO_ERRS = 0;
             static constexpr int EXIT_CODE_ERR = 1;
 
-            static std::vector<std::string> s_actions;
+            static std::vector<const char *> s_actions;
     };
 } // namespace utils

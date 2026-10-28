@@ -53,7 +53,7 @@ namespace core
 })";
 
             static void fill_cache_entry(core::CacheEntry &cache, const json &entry, core::DangerLevel danger);
-            static DangerLevel parse_danger_level(const std::string &d);
+            static DangerLevel parse_danger_level(const std::string_view d);
 
             static void load_user_config();
             static int load_json_file(json &json_config, const std::string &path);

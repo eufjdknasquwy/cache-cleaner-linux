@@ -7,9 +7,9 @@ utils::PackageManagers utils::SystemDetector::s_package_managers;
 void utils::SystemDetector::list_detections()
 {
     auto package_managers = get_pms();
-    for (auto pm : package_managers.names)
+    for (std::string_view pm : package_managers.names)
     {
-        utils::ConsoleLogger::log(core::LogLevel::Info, ("Detected root cache: " + pm));
+        utils::ConsoleLogger::log(core::LogLevel::Info, ("Detected root cache: " + std::string(pm)));
     }
 }
 void utils::SystemDetector::detect_distribution(const json &json_config)
@@ -40,7 +40,7 @@ void utils::SystemDetector::detect_package_managers(const std::string &distro_id
     detect_pm_by_command("which docker", "docker");
     detect_pm_by_command("which podman", "podman");
 }
-void utils::SystemDetector::detect_pm_by_distro_id(const std::string &distro_id, const json &json_config)
+void utils::SystemDetector::detect_pm_by_distro_id(const std::string_view distro_id, const json &json_config)
 {
     if (json_config.is_null())
         return;

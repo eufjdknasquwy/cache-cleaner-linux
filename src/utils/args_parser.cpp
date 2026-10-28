@@ -5,7 +5,7 @@
 bool utils::ArgsParser::tray = false;
 bool utils::ArgsParser::dry_run = false;
 bool utils::ArgsParser::yes = false;
-std::vector<std::string> utils::ArgsParser::s_actions;
+std::vector<const char *> utils::ArgsParser::s_actions;
 void utils::ArgsParser::parse(int &argc, char *argv[])
 {
     for (int i = 1; i < argc; ++i)
@@ -70,7 +70,7 @@ void utils::ArgsParser::parse(int &argc, char *argv[])
     }
     if (s_actions.empty())
         return;
-    for (auto action : s_actions)
+    for (std::string_view action : s_actions)
     {
         if (action == "--delete-safe")
         {

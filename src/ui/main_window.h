@@ -22,8 +22,8 @@ namespace ui
             static constexpr int MIN_WIN_WIDTH = 550;
             static constexpr int MIN_WIN_HEIGHT = 500;
 
-            static constexpr int DEFAULT_WIN_WIDTH = 750;
-            static constexpr int DEFAULT_WIN_HEIGHT = 800;
+            static constexpr int DEFAULT_WIN_WIDTH = 700;
+            static constexpr int DEFAULT_WIN_HEIGHT = 650;
 
             static constexpr int DEFAULT_MARGIN = 10;
             static constexpr int DEFAULT_SPACING = 5;

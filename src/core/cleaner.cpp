@@ -132,7 +132,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
         }
     }
     static const std::unordered_set<std::string> AUR_EXCEPTIONS{"completion.cache", "vcs.json"};
-    for (const std::string &path_str : paths_to_clear)
+    for (const std::string_view path_str : paths_to_clear)
     {
         fs::path path = fs::path(path_str).lexically_normal();
         if (!command_paths.contains(path) && !root_paths.contains(path) && !fs::exists(path))
@@ -191,7 +191,7 @@ void core::CacheCleaner::clear_cache(const std::vector<std::string> &paths_to_cl
                 utils::ConsoleLogger::log(core::LogLevel::Info, ("Deleting " + path.string()));
             if (fs::is_directory(path))
             {
-                delete_paths(path, options);
+                delete_paths(std::string(path), options);
             }
             else
             {
@@ -234,7 +234,7 @@ void core::CacheCleaner::run_command(const std::string &command, const ClearOpti
     }
     catch (const Glib::Error &e)
     {
-        utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + e.what()));
+        utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to run " + command + ": " + std::string(e.what())));
         utils::ConsoleLogger::log(core::LogLevel::Error, ("Code: " + std::to_string(e.code())));
         result.exit_code = e.code();
         utils::ConsoleLogger::flush_errors_to_ui();
@@ -251,8 +251,9 @@ void core::CacheCleaner::delete_paths(const fs::directory_entry &entry, const Cl
     try
     {
         std::string path = entry.path().string();
-        std::thread thread(del_to_trash, path, options);
-        thread.join();
+        del_to_trash(path, options);
+        // std::thread thread(del_to_trash, path, options);
+        // thread.join();
     }
     catch (const std::exception &e)
     {
@@ -266,8 +267,9 @@ void core::CacheCleaner::delete_paths(const fs::path &fs_path, const ClearOption
     try
     {
         std::string path = fs_path.string();
-        std::thread thread(del_to_trash, path, options);
-        thread.join();
+        del_to_trash(path, options);
+        // std::thread thread(del_to_trash, path, options);
+        // thread.join();
     }
     catch (const std::exception &e)
     {
@@ -300,7 +302,8 @@ void core::CacheCleaner::del_to_trash(const std::string &path, const core::Clear
         }
         else
         {
-            utils::ConsoleLogger::log(core::LogLevel::Error, ("Failed to delete " + path + ": " + e.what()));
+            utils::ConsoleLogger::log(core::LogLevel::Error,
+                                      ("Failed to delete " + path + ": " + std::string(e.what())));
             utils::ConsoleLogger::flush_errors_to_ui();
         }
     }

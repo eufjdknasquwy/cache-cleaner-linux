@@ -1,5 +1,6 @@
 #include "console_logger.h"
 #include "core/config_loader.h"
+#include "core/constants.h"
 #include "core/enums.h"
 #include "ui/message_dialog_helper.h"
 #include <ctime>
@@ -9,7 +10,8 @@
 #include <iostream>
 #include <string>
 namespace fs = std::filesystem;
-std::string utils::ConsoleLogger::s_home_path = std::getenv("HOME") ? std::getenv("HOME") : "/tmp";
+std::string utils::ConsoleLogger::s_home_path =
+    core::get_home_dir().string().empty() ? "/tmp" : core::get_home_dir().string();
 std::string utils::ConsoleLogger::s_error_buffer;
 std::ofstream utils::ConsoleLogger::s_log;
 void utils::ConsoleLogger::init()
@@ -22,11 +24,7 @@ void utils::ConsoleLogger::init()
 
     s_log.open(log_path);
 }
-void utils::ConsoleLogger::printmsg(const char *message)
-{
-    std::cout << message << std::endl;
-}
-void utils::ConsoleLogger::printmsg(const std::string &message)
+void utils::ConsoleLogger::printmsg(const std::string_view message)
 {
     std::cout << message << std::endl;
 }
@@ -58,9 +56,9 @@ void utils::ConsoleLogger::export_report_to_json(core::ClearReport &clear_report
 
     report_file.close();
 }
-void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &msg)
+void utils::ConsoleLogger::log(const core::LogLevel level, const std::string_view msg)
 {
-    std::string full_msg = "[" + timestamp("") + "] " + "[" + level_to_str(level) + "] " + msg;
+    std::string full_msg = "[" + timestamp("") + "] " + "[" + level_to_str(level) + "] " + std::string(msg);
 
     switch (level)
     {
@@ -71,9 +69,12 @@ void utils::ConsoleLogger::log(const core::LogLevel level, const std::string &ms
         std::cout << YELLOW << full_msg << RESET << std::endl;
         break;
     case core::LogLevel::Error:
+    {
         std::cout << RED << full_msg << RESET << std::endl;
-        s_error_buffer += msg + "\n";
+        std::lock_guard<std::mutex> lock(ui::MessageDialogHelper::s_error_mutex);
+        s_error_buffer += std::string(msg) + "\n";
         break;
+    }
     default:
         std::cout << RESET << full_msg << RESET << std::endl;
         break;
@@ -102,7 +103,7 @@ void utils::ConsoleLogger::reset_error_buffer()
 {
     s_error_buffer.clear();
 }
-std::string utils::ConsoleLogger::timestamp(std::string format)
+std::string utils::ConsoleLogger::timestamp(const std::string format)
 {
     auto now = std::chrono::system_clock::now();
     auto t = std::chrono::system_clock::to_time_t(now);
